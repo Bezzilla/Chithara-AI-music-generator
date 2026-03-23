@@ -22,8 +22,6 @@ Chithara lets users:
 
 ## Installation
 
-### Requirements
-- Python 3.10 or higher
 
 ### Steps
 
@@ -93,13 +91,14 @@ Chithara-AI-music-generator/
 
 ---
 
-## Domain Models
 
-| Model | Description |
-|---|---|
-| `User` | Registered user who owns songs and albums |
-| `Song` | AI-generated song belonging to one User |
-| `Album` | User-created collection of Songs |
-| `ShareLink` | Shareable link pointing to a Song or Album |
+## CRUD Evidence
 
+### Create & Read
+![alt text](image.png)
 
+### Update
+![alt text](image-1.png)
+
+### Delete
+![alt text](image-2.png)
