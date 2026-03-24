@@ -82,6 +82,8 @@ Chithara-AI-music-generator/
 ├── music/             # Main domain app
 │   ├── models.py      # Domain entities
 │   ├── admin.py       # Admin CRUD interface
+│   ├── views.py       # API views
+│   ├── urls.py        # API routes
 │   └── migrations/    # Database migrations
 ├── manage.py
 ├── requirements.txt
@@ -111,3 +113,10 @@ Chithara-AI-music-generator/
 
 ### 2. duration on Song is nullable
 **Justification:** The SRS (Section 9) lists song duration as an open issue. Since AI generation is also out of scope for this exercise, duration cannot be populated at creation time so it is kept nullable.
+
+## API Endpoints
+
+| Method | URL | Description |
+|---|---|---|
+| GET | `/api/users/` | List all users |
+| POST | `/api/users/` | Create a user |
