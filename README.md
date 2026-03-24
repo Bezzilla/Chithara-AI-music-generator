@@ -62,17 +62,17 @@ Open `.env` and set a value for `SECRET_KEY`.
 python manage.py migrate
 ```
 
-**7. Create admin user**
+**6. Create admin user**
 ```bash
 python manage.py createsuperuser
 ```
 
-**8. Start the server**
+**7. Start the server**
 ```bash
 python manage.py runserver
 ```
 
-**9. Open your browser at** `http://127.0.0.1:8000/admin`
+**8. Open your browser at** `http://127.0.0.1:8000/admin`
 
 
 
