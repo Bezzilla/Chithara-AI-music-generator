@@ -119,4 +119,3 @@ Chithara-AI-music-generator/
 | Method | URL | Description |
 |---|---|---|
 | GET | `/api/users/` | List all users |
-| POST | `/api/users/` | Create a user |
