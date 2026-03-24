@@ -102,3 +102,12 @@ Chithara-AI-music-generator/
 
 ### Delete
 ![alt text](image-2.png)
+
+
+## Deviations from Domain Model
+
+### 1. User uses UUID instead of Google's ID
+**Justification:** Google OAuth is out of scope for Exercise 3. UUID is used as a placeholder. When OAuth is implemented in a later exercise
+
+### 2. duration on Song is nullable
+**Justification:** The SRS (Section 9) lists song duration as an open issue. Since AI generation is also out of scope for this exercise, duration cannot be populated at creation time so it is kept nullable.
