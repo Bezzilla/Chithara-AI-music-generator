@@ -109,13 +109,12 @@ The API responds immediately with `PENDING` status while audio is generated in t
 ```
 
 
-## Deviations from Domain Model
+## Deviations from SRS
 
-### 1. User uses UUID instead of Google's ID
-Google OAuth is out of scope for this exercise. UUID is used as a placeholder identifier. It will be replaced when OAuth is implemented.
+### 1. Authentication — email placeholder instead of Google OAuth
+The SRS (FR-01, US-01) specifies Google OAuth. Google OAuth is out of scope for Exercise 4. The current implementation uses a simple email + display name login backed by Django sessions. The User model, session management, and logout are all in place and will be connected to Google OAuth in a future exercise.
 
-### 2. `duration` on Song is nullable
-Duration cannot be known at creation time since it depends on the AI generation result. It is populated once generation completes.
+
 
 ---
 
