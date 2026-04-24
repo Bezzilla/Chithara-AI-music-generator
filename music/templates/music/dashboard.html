@@ -1,0 +1,699 @@
+{% load music_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chithara – Generate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    .app {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a0a0f;
+      height: 100vh;
+      display: flex;
+      color: #e8e6f0;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      background: #0e0e16;
+      border-right: 0.5px solid #2a2a3a;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      flex-shrink: 0;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #c8b8ff;
+      padding: 0 20px 28px;
+      letter-spacing: -0.5px;
+      border-bottom: 0.5px solid #1e1e2e;
+    }
+    .logo span { color: #7c5cbf; }
+
+    .nav { padding: 16px 0; flex: 1; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      font-size: 13.5px;
+      color: #8884a0;
+      cursor: pointer;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+      text-decoration: none;
+    }
+    .nav-item.active { color: #c8b8ff; background: #1a1528; border-left-color: #8b5cf6; }
+    .nav-item:hover:not(.active) { color: #c8b8ff; background: #14121f; }
+    .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+    .sidebar-footer { padding: 0 16px 0; }
+    .user-chip {
+      padding: 10px 12px;
+      background: #1a1528;
+      border-radius: 10px;
+      border: 0.5px solid #2a2440;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 500; color: #f0e8ff;
+      flex-shrink: 0;
+    }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 12.5px; font-weight: 500; color: #d4c8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-email { font-size: 11px; color: #6860a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .logout-link {
+      display: block;
+      text-align: center;
+      font-size: 11.5px;
+      color: #50508a;
+      text-decoration: none;
+      margin-top: 10px;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .logout-link:hover { color: #c8b8ff; }
+
+    /* ── Main ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .topbar {
+      padding: 20px 28px 16px;
+      border-bottom: 0.5px solid #1e1e2e;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #e8e0ff;
+      letter-spacing: -0.3px;
+    }
+    .generate-btn {
+      background: #7c3aed;
+      color: #f0e8ff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .generate-btn:hover { background: #6d30d4; }
+
+    .content { flex: 1; display: flex; overflow: hidden; }
+    .center-panel { flex: 1; padding: 24px 28px; overflow-y: auto; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #6860a0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    /* ── Loading bar ── */
+    .loading-bar-wrap {
+      background: #0e0e16;
+      border: 0.5px solid #2a2440;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .pulse-icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: #2a1a4a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .loading-text { flex: 1; }
+    .loading-label { font-size: 12.5px; color: #d0c8e8; font-weight: 500; margin-bottom: 6px; }
+    .bar-track { height: 4px; background: #2a2440; border-radius: 2px; overflow: hidden; }
+    .bar-fill {
+      height: 100%; width: 0%;
+      background: #7c3aed; border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+    .bar-pct { font-size: 11px; color: #8b5cf6; margin-top: 4px; }
+
+    /* ── Generate form ── */
+    .gen-form {
+      background: #0e0e16;
+      border: 0.5px solid #2a2a3a;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 12px; color: #8884a0; }
+    .field input, .field select, .field textarea {
+      background: #16141f;
+      border: 0.5px solid #2a2440;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: #d8d0f0;
+      outline: none;
+    }
+    .field textarea { resize: none; height: 64px; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #7c3aed; }
+    .field select option { background: #16141f; }
+
+    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 0.5px solid #2a2440;
+      font-size: 12px;
+      color: #9890b8;
+      cursor: pointer;
+      background: #14121f;
+      transition: all 0.15s;
+    }
+    .chip.selected { background: #2a1a4a; border-color: #7c3aed; color: #c8b8ff; }
+
+    .form-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+    .confirm-btn {
+      background: #7c3aed; color: #f0e8ff;
+      border: none; padding: 10px 24px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px; font-weight: 500; cursor: pointer;
+    }
+    .confirm-btn:hover { background: #6d30d4; }
+    .confirm-btn:disabled { background: #3a2a5a; color: #6860a0; cursor: not-allowed; }
+    .hint { font-size: 12px; color: #6860a0; }
+
+    .form-error {
+      background: #2d1020; border: 0.5px solid #7c3060;
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 12.5px; color: #f07090;
+      margin-bottom: 12px; display: none;
+    }
+
+    /* ── Songs list ── */
+    .songs-grid { display: flex; flex-direction: column; gap: 8px; }
+    .song-row {
+      background: #0e0e16;
+      border: 0.5px solid #1e1e2e;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: border-color 0.15s;
+    }
+    .song-row:hover { border-color: #2a2440; background: #12101a; }
+    .song-row.active { border-color: #7c3aed; }
+    .song-num { font-size: 13px; color: #6860a0; width: 18px; text-align: center; }
+    .song-art {
+      width: 40px; height: 40px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .art-purple { background: #2a1a4a; }
+    .art-teal   { background: #0f2d28; }
+    .art-amber  { background: #2d1f0a; }
+    .art-pink   { background: #2d1020; }
+    .song-meta { flex: 1; min-width: 0; }
+    .song-title { font-size: 13.5px; font-weight: 500; color: #d8d0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .song-sub { font-size: 12px; color: #6860a0; margin-top: 2px; }
+    .badge { font-size: 10.5px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+    .badge-pub  { background: #0f2d28; color: #3dcaa5; border: 0.5px solid #1d5a46; }
+    .badge-priv { background: #1e1e2e; color: #6860a0; border: 0.5px solid #2a2440; }
+    .song-dur { font-size: 12px; color: #6860a0; min-width: 36px; text-align: right; }
+    .action-btn {
+      background: none; border: none;
+      color: #6860a0; cursor: pointer;
+      font-size: 14px; padding: 4px; border-radius: 4px;
+    }
+    .action-btn:hover { color: #c8b8ff; }
+    .empty-state { color: #6860a0; font-size: 13px; padding: 20px 0; text-align: center; }
+
+    /* ── Right panel ── */
+    .right-panel {
+      width: 260px;
+      border-left: 0.5px solid #1e1e2e;
+      background: #0a0a0f;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .player { padding: 20px; border-bottom: 0.5px solid #1e1e2e; flex-shrink: 0; }
+    .now-playing-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #6860a0; margin-bottom: 12px; }
+    .player-art {
+      width: 100%; aspect-ratio: 1; border-radius: 12px;
+      background: linear-gradient(135deg, #2a1a4a 0%, #1a0a3a 50%, #0a0a20 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; margin-bottom: 14px;
+      position: relative; overflow: hidden;
+    }
+    .player-art::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 70%, rgba(124,60,237,0.3) 0%, transparent 60%);
+    }
+    .player-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: #e8e0ff; margin-bottom: 2px; }
+    .player-genre { font-size: 12px; color: #8880a0; margin-bottom: 16px; }
+
+    .progress-bar {
+      height: 3px; background: #2a2440; border-radius: 2px;
+      margin-bottom: 6px; cursor: pointer; position: relative;
+    }
+    .progress-fill {
+      height: 100%; width: 0%; background: #8b5cf6; border-radius: 2px;
+      position: relative; transition: width 0.25s linear;
+    }
+    .progress-fill::after {
+      content: '';
+      position: absolute; right: -4px; top: 50%; transform: translateY(-50%);
+      width: 8px; height: 8px; border-radius: 50%; background: #c4a8ff;
+    }
+    .time-row { display: flex; justify-content: space-between; font-size: 11px; color: #6860a0; margin-bottom: 14px; }
+
+    .controls { display: flex; align-items: center; justify-content: center; gap: 16px; }
+    .ctrl-btn { background: none; border: none; color: #9890b8; cursor: pointer; font-size: 16px; padding: 4px; }
+    .ctrl-btn:hover { color: #c8b8ff; }
+    .ctrl-btn.active { color: #8b5cf6; }
+    .play-btn {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: #7c3aed; border: none; color: #f0e8ff;
+      cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .play-btn:hover { background: #6d30d4; }
+
+    .albums-section { padding: 16px 20px; flex: 1; overflow-y: auto; }
+    .album-card {
+      background: #0e0e16; border: 0.5px solid #1e1e2e;
+      border-radius: 10px; padding: 12px;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+      cursor: pointer; transition: border-color 0.15s;
+    }
+    .album-card:hover { border-color: #2a2440; }
+    .album-art {
+      width: 38px; height: 38px; border-radius: 6px;
+      background: #1a1528;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .album-name { font-size: 13px; font-weight: 500; color: #d0c8e8; }
+    .album-count { font-size: 11.5px; color: #6860a0; margin-top: 2px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">Chith<span>ara</span></div>
+    <nav class="nav">
+      <div class="nav-item active" data-section="generate">
+        <span class="nav-icon">✦</span> Generate
+      </div>
+      <div class="nav-item" data-section="library">
+        <span class="nav-icon">♪</span> Library
+      </div>
+      <div class="nav-item" data-section="albums">
+        <span class="nav-icon">♫</span> Albums
+      </div>
+      <div class="nav-item" data-section="shared">
+        <span class="nav-icon">⊕</span> Shared
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar">{{ user.display_name|initials }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ user.display_name }}</div>
+          <div class="user-email">{{ user.email }}</div>
+        </div>
+      </div>
+      <a href="{% url 'logout' %}" class="logout-link">Sign out</a>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Generate a song</div>
+      <button class="generate-btn" id="new-song-btn">✦ New Song</button>
+    </div>
+
+    <div class="content">
+      <div class="center-panel">
+
+        <!-- Loading indicator (hidden until generation starts) -->
+        <div class="loading-bar-wrap" id="loading-bar" style="display:none">
+          <div class="pulse-icon">✦</div>
+          <div class="loading-text">
+            <div class="loading-label" id="loading-label">Generating your song…</div>
+            <div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
+            <div class="bar-pct" id="bar-pct">Starting…</div>
+          </div>
+        </div>
+
+        <!-- Generate form -->
+        <div id="section-generate">
+          <div class="section-label" style="margin-bottom:10px;">Song parameters</div>
+          <div class="gen-form">
+            <div class="form-error" id="form-error"></div>
+            <form id="generate-form">
+              {% csrf_token %}
+              <div class="form-row">
+                <div class="field">
+                  <label>Title</label>
+                  <input type="text" name="title" id="input-title" placeholder="Song title" required />
+                </div>
+                <div class="field">
+                  <label>Occasion</label>
+                  <select name="occasion" id="input-occasion">
+                    <option value="BIRTHDAY">Birthday</option>
+                    <option value="WEDDING">Wedding</option>
+                    <option value="GRADUATION">Graduation</option>
+                    <option value="HOLIDAY" selected>Holiday</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field" style="margin-bottom:12px;">
+                <label>Description</label>
+                <textarea name="description" id="input-description" placeholder="Describe the mood, style, or story…"></textarea>
+              </div>
+              <div class="field" style="margin-bottom:0;">
+                <label>Genre</label>
+                <div class="chip-group">
+                  <div class="chip" data-value="POP">Pop</div>
+                  <div class="chip" data-value="ROCK">Rock</div>
+                  <div class="chip" data-value="JAZZ">Jazz</div>
+                  <div class="chip selected" data-value="CLASSICAL">Classical</div>
+                  <div class="chip" data-value="HIP_HOP">Hip-Hop</div>
+                  <div class="chip" data-value="OTHER">Other</div>
+                </div>
+                <input type="hidden" name="genre" id="genre-input" value="CLASSICAL" />
+              </div>
+              <div class="form-bottom">
+                <div class="hint">All fields validated before generation</div>
+                <button class="confirm-btn" type="submit" id="generate-btn">Confirm &amp; Generate</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Recent songs -->
+        <div class="section-label">Recent songs</div>
+        <div class="songs-grid" id="songs-grid">
+          {% for song in songs %}
+          <div class="song-row"
+               data-song-id="{{ song.song_id }}"
+               data-audio="{{ song.audio_url|default:'' }}"
+               data-title="{{ song.title }}"
+               data-genre="{{ song.get_genre_display }}"
+               data-icon="{{ song.genre|genre_icon }}">
+            <div class="song-num">{{ forloop.counter }}</div>
+            <div class="song-art {{ song.genre|genre_art_class }}">{{ song.genre|genre_icon }}</div>
+            <div class="song-meta">
+              <div class="song-title">{{ song.title }}</div>
+              <div class="song-sub">{{ song.get_genre_display }} · {{ song.get_occasion_display }}</div>
+            </div>
+            {% if song.visibility == 'PUBLIC' %}
+              <span class="badge badge-pub">Public</span>
+            {% else %}
+              <span class="badge badge-priv">Private</span>
+            {% endif %}
+            <div class="song-dur">{{ song.duration|format_duration }}</div>
+            <button class="action-btn play-song-btn" title="Play">▶</button>
+            <a class="action-btn" href="/api/songs/{{ song.song_id }}/download/" title="Download" download>⇩</a>
+          </div>
+          {% empty %}
+          <div class="empty-state">No songs yet — generate your first song above!</div>
+          {% endfor %}
+        </div>
+
+      </div>
+
+      <!-- Right panel: player + albums -->
+      <div class="right-panel">
+        <div class="player">
+          <div class="now-playing-label">Now playing</div>
+          <div class="player-art">
+            <span id="player-icon">{% if songs %}{{ songs.0.genre|genre_icon }}{% else %}♪{% endif %}</span>
+          </div>
+          <div class="player-title" id="player-title">
+            {% if songs %}{{ songs.0.title }}{% else %}No song selected{% endif %}
+          </div>
+          <div class="player-genre" id="player-genre">
+            {% if songs %}{{ songs.0.get_genre_display }} · by {{ user.display_name }}{% else %}Select a song to play{% endif %}
+          </div>
+          <div class="progress-bar" id="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="time-row">
+            <span id="current-time">0:00</span>
+            <span id="total-time">{% if songs %}{{ songs.0.duration|format_duration }}{% else %}—{% endif %}</span>
+          </div>
+          <audio id="audio-player"></audio>
+          <div class="controls">
+            <button class="ctrl-btn" id="loop-btn" title="Loop">↻</button>
+            <button class="ctrl-btn" id="prev-btn" title="Previous">⏮</button>
+            <button class="play-btn" id="play-btn" title="Play">▶</button>
+            <button class="ctrl-btn" id="next-btn" title="Next">⏭</button>
+            <button class="ctrl-btn" id="download-btn" title="Download">⇩</button>
+          </div>
+        </div>
+
+        <div class="albums-section">
+          <div class="section-label">My albums</div>
+          {% for album in albums %}
+          <div class="album-card">
+            <div class="album-art">🎵</div>
+            <div>
+              <div class="album-name">{{ album.title }}</div>
+              <div class="album-count">{{ album.songs.count }} song{{ album.songs.count|pluralize }}</div>
+            </div>
+          </div>
+          {% empty %}
+          <div style="color:#6860a0;font-size:12px;">No albums yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Genre chip selection ──
+  const chips = document.querySelectorAll('.chip');
+  const genreInput = document.getElementById('genre-input');
+  chips.forEach(c => c.addEventListener('click', () => {
+    chips.forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+    genreInput.value = c.dataset.value;
+  }));
+
+  // ── Nav items ──
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n => n.addEventListener('click', () => {
+    navItems.forEach(x => x.classList.remove('active'));
+    n.classList.add('active');
+    document.getElementById('page-title').textContent =
+      n.dataset.section.charAt(0).toUpperCase() + n.dataset.section.slice(1);
+  }));
+
+  // ── Audio player state ──
+  const audioEl = document.getElementById('audio-player');
+  const playBtn = document.getElementById('play-btn');
+  const loopBtn = document.getElementById('loop-btn');
+  const progressFill = document.getElementById('progress-fill');
+  const currentTimeEl = document.getElementById('current-time');
+  let isLooping = false;
+  let currentSongRows = [];
+
+  function formatTime(s) {
+    const t = Math.floor(s);
+    return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+  }
+
+  function loadSong(row) {
+    document.querySelectorAll('.song-row').forEach(r => r.classList.remove('active'));
+    row.classList.add('active');
+    document.getElementById('player-title').textContent = row.dataset.title;
+    document.getElementById('player-genre').textContent =
+      row.dataset.genre + ' · by {{ user.display_name }}';
+    document.getElementById('player-icon').textContent = row.dataset.icon;
+    const audio = row.dataset.audio;
+    if (audio) {
+      audioEl.src = audio;
+      audioEl.play();
+      playBtn.textContent = '⏸';
+    } else {
+      playBtn.textContent = '▶';
+    }
+  }
+
+  // Song row click
+  document.querySelectorAll('.song-row').forEach(r => {
+    r.addEventListener('click', e => {
+      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+      loadSong(r);
+    });
+  });
+
+  // Play buttons inside rows
+  document.querySelectorAll('.play-song-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      loadSong(btn.closest('.song-row'));
+    });
+  });
+
+  // Play/pause
+  playBtn.addEventListener('click', () => {
+    if (!audioEl.src) return;
+    if (audioEl.paused) { audioEl.play(); playBtn.textContent = '⏸'; }
+    else { audioEl.pause(); playBtn.textContent = '▶'; }
+  });
+
+  // Loop
+  loopBtn.addEventListener('click', () => {
+    isLooping = !isLooping;
+    audioEl.loop = isLooping;
+    loopBtn.classList.toggle('active', isLooping);
+  });
+
+  // Download current song
+  document.getElementById('download-btn').addEventListener('click', () => {
+    const active = document.querySelector('.song-row.active');
+    if (active) {
+      const id = active.dataset.songId;
+      window.location.href = `/api/songs/${id}/download/`;
+    }
+  });
+
+  // Progress bar update
+  audioEl.addEventListener('timeupdate', () => {
+    if (!audioEl.duration) return;
+    const pct = (audioEl.currentTime / audioEl.duration) * 100;
+    progressFill.style.width = pct + '%';
+    currentTimeEl.textContent = formatTime(audioEl.currentTime);
+  });
+
+  audioEl.addEventListener('ended', () => { playBtn.textContent = '▶'; });
+
+  // Seek on progress bar click
+  document.getElementById('progress-bar').addEventListener('click', e => {
+    if (!audioEl.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    audioEl.currentTime = ((e.clientX - rect.left) / rect.width) * audioEl.duration;
+  });
+
+  // ── Generate form ──
+  const generateForm = document.getElementById('generate-form');
+  const loadingBar = document.getElementById('loading-bar');
+  const barFill = document.getElementById('bar-fill');
+  const barPct = document.getElementById('bar-pct');
+  const loadingLabel = document.getElementById('loading-label');
+  const formError = document.getElementById('form-error');
+  const generateBtn = document.getElementById('generate-btn');
+
+  function showError(msg) {
+    formError.textContent = msg;
+    formError.style.display = 'block';
+  }
+
+  function hideError() { formError.style.display = 'none'; }
+
+  function setProgress(pct, label) {
+    barFill.style.width = pct + '%';
+    barPct.textContent = label;
+  }
+
+  generateForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    hideError();
+
+    const title = document.getElementById('input-title').value.trim();
+    if (!title) { showError('Please enter a song title.'); return; }
+
+    generateBtn.disabled = true;
+    loadingBar.style.display = 'flex';
+    loadingLabel.textContent = `Generating "${title}"…`;
+    setProgress(10, 'Sending request…');
+
+    const body = {
+      title,
+      occasion: document.getElementById('input-occasion').value,
+      description: document.getElementById('input-description').value.trim(),
+      genre: genreInput.value,
+    };
+
+    try {
+      setProgress(30, 'Contacting AI service…');
+      const resp = await fetch('/api/songs/generate/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': generateForm.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: JSON.stringify(body),
+      });
+
+      setProgress(80, 'Processing response…');
+      const result = await resp.json();
+
+      if (resp.ok) {
+        setProgress(100, 'Complete ✓');
+        setTimeout(() => location.reload(), 600);
+      } else {
+        loadingBar.style.display = 'none';
+        showError(result.error || 'Generation failed. Please try again.');
+      }
+    } catch {
+      loadingBar.style.display = 'none';
+      showError('Network error. Please check your connection.');
+    } finally {
+      generateBtn.disabled = false;
+    }
+  });
+
+  // New Song button scrolls to form
+  document.getElementById('new-song-btn').addEventListener('click', () => {
+    document.getElementById('input-title').focus();
+    navItems.forEach(x => x.classList.remove('active'));
+    document.querySelector('[data-section="generate"]').classList.add('active');
+    document.getElementById('page-title').textContent = 'Generate a song';
+  });
+</script>
+</body>
+</html>
