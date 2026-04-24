@@ -56,13 +56,13 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-**7. Open** `http://127.0.0.1:8000/` in your browser — you will land on the login page.
+**7. Open** `http://127.0.0.1:8000/` in your browser.
 
 ---
 
 ## Strategy Pattern 
 
-Song generation uses the **Strategy design pattern**. The active strategy is selected via the `GENERATOR_STRATEGY` environment variable — no code changes required to switch.
+Song generation uses the **Strategy design pattern**. The active strategy is selected via the `GENERATOR_STRATEGY` environment variable in `.env`.
 
 
 ### Mock mode (no API key required)
@@ -74,6 +74,17 @@ GENERATOR_STRATEGY=mock
 
 The mock strategy instantly marks the song as `SUCCESS` and returns a real hosted MP3. Useful for UI development and testing without spending API credits.
 
+**Example response:**
+```json
+{
+  "song_id": "3f1b2c4d-...",
+  "title": "My Song",
+  "status": "SUCCESS",
+  "audio_url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+  "duration": 229.0
+}
+```
+
 ### Suno mode (real AI generation)
 
 In `.env`:
@@ -83,6 +94,19 @@ SUNO_API_KEY=your-suno-api-key-here
 ```
 
 Get an API key from [sunoapi.org](https://sunoapi.org).
+
+The API responds immediately with `PENDING` status while audio is generated in the background. Poll `GET /api/songs/<song_id>/` or refresh the page to check when status updates to `SUCCESS`.
+
+**Example response:**
+```json
+{
+  "song_id": "7a3c9e1f-...",
+  "title": "My Song",
+  "status": "PENDING",
+  "audio_url": null,
+  "duration": null
+}
+```
 
 
 ## Deviations from Domain Model

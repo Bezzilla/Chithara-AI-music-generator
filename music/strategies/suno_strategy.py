@@ -80,8 +80,8 @@ class SunoSongGeneratorStrategy(SongGeneratorStrategy):
                     print(f"[Suno] Song {song.song_id} failed.")
                     return
 
-                if task_status == "SUCCESS" and clips:
-                    clip = clips[0]
+                if task_status in ("SUCCESS", "FIRST_SUCCESS") and clips:
+                    clip = next((c for c in clips if c.get("audioUrl")), clips[0])
                     audio_url = clip.get("audioUrl") or clip.get("streamAudioUrl")
                     song.refresh_from_db()
                     song.audio_url = audio_url
