@@ -123,7 +123,8 @@ class SongDownloadView(View):
             return JsonResponse({'error': 'Audio not ready yet.'}, status=404)
 
         import urllib.request
-        with urllib.request.urlopen(song.audio_url) as response:
+        req = urllib.request.Request(song.audio_url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req) as response:
             content = response.read()
 
         filename = f"{song.title.replace(' ', '_')}.mp3"
