@@ -249,8 +249,10 @@
     .song-title { font-size: 13.5px; font-weight: 500; color: #d8d0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .song-sub { font-size: 12px; color: #6860a0; margin-top: 2px; }
     .badge { font-size: 10.5px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
-    .badge-pub  { background: #0f2d28; color: #3dcaa5; border: 0.5px solid #1d5a46; }
-    .badge-priv { background: #1e1e2e; color: #6860a0; border: 0.5px solid #2a2440; }
+    .badge-pub     { background: #0f2d28; color: #3dcaa5; border: 0.5px solid #1d5a46; }
+    .badge-priv    { background: #1e1e2e; color: #6860a0; border: 0.5px solid #2a2440; }
+    .badge-pending { background: #1a1528; color: #8b5cf6; border: 0.5px solid #4c2a8a; animation: pulse 1.5s ease-in-out infinite; }
+    .badge-failed  { background: #2d1020; color: #f07090; border: 0.5px solid #7c3060; }
     .song-dur { font-size: 12px; color: #6860a0; min-width: 36px; text-align: right; }
     .action-btn {
       background: none; border: none;
@@ -439,14 +441,19 @@
                data-audio="{{ song.audio_url|default:'' }}"
                data-title="{{ song.title }}"
                data-genre="{{ song.get_genre_display }}"
-               data-icon="{{ song.genre|genre_icon }}">
+               data-icon="{{ song.genre|genre_icon }}"
+               data-status="{{ song.status }}">
             <div class="song-num">{{ forloop.counter }}</div>
             <div class="song-art {{ song.genre|genre_art_class }}">{{ song.genre|genre_icon }}</div>
             <div class="song-meta">
               <div class="song-title">{{ song.title }}</div>
               <div class="song-sub">{{ song.get_genre_display }} · {{ song.get_occasion_display }}</div>
             </div>
-            {% if song.visibility == 'PUBLIC' %}
+            {% if song.status == 'PENDING' %}
+              <span class="badge badge-pending">Generating…</span>
+            {% elif song.status == 'FAILED' %}
+              <span class="badge badge-failed">Failed</span>
+            {% elif song.visibility == 'PUBLIC' %}
               <span class="badge badge-pub">Public</span>
             {% else %}
               <span class="badge badge-priv">Private</span>
@@ -514,13 +521,14 @@
 
 <script>
   // ── Genre chip selection ──
-  const chips = document.querySelectorAll('.chip');
+  const chips = document.querySelectorAll('.chip[data-value]');
   const genreInput = document.getElementById('genre-input');
   chips.forEach(c => c.addEventListener('click', () => {
     chips.forEach(x => x.classList.remove('selected'));
     c.classList.add('selected');
     genreInput.value = c.dataset.value;
   }));
+
 
   // ── Nav items ──
   const navItems = document.querySelectorAll('.nav-item');
@@ -552,11 +560,27 @@
     document.getElementById('player-genre').textContent =
       row.dataset.genre + ' · by {{ user.display_name }}';
     document.getElementById('player-icon').textContent = row.dataset.icon;
+
     const audio = row.dataset.audio;
+    const status = row.dataset.status;
+
+    if (status === 'PENDING') {
+      document.getElementById('player-genre').textContent = 'Still generating… refresh in a moment';
+      playBtn.textContent = '▶';
+      return;
+    }
+    if (status === 'FAILED') {
+      document.getElementById('player-genre').textContent = 'Generation failed';
+      playBtn.textContent = '▶';
+      return;
+    }
     if (audio) {
       audioEl.src = audio;
-      audioEl.play();
-      playBtn.textContent = '⏸';
+      audioEl.play().then(() => {
+        playBtn.textContent = '⏸';
+      }).catch(() => {
+        playBtn.textContent = '▶';
+      });
     } else {
       playBtn.textContent = '▶';
     }

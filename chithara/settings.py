@@ -58,3 +58,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = 'static/'
+
+# Song generation strategy: "mock" or "suno"
+GENERATOR_STRATEGY = config('GENERATOR_STRATEGY', default='mock')
+SUNO_API_KEY = config('SUNO_API_KEY', default='')
