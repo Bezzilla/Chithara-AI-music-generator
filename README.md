@@ -142,13 +142,3 @@ Duration cannot be known at creation time since it depends on the AI generation 
 
 ---
 
-## CRUD Evidence (Exercise 3)
-
-### Create & Read
-![Create and Read](image.png)
-
-### Update
-![Update](image-1.png)
-
-### Delete
-![Delete](image-2.png)
