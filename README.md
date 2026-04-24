@@ -85,53 +85,6 @@ SUNO_API_KEY=your-suno-api-key-here
 Get an API key from [sunoapi.org](https://sunoapi.org).
 
 
----
-
-## Project Structure
-
-```
-Chithara-AI-music-generator/
-├── chithara/
-│   ├── settings.py
-│   └── urls.py
-├── music/
-│   ├── models.py
-│   ├── views.py
-│   ├── urls.py
-│   ├── admin.py
-│   ├── migrations/
-│   ├── strategies/
-│   │   ├── base.py              # Abstract SongGeneratorStrategy
-│   │   ├── mock_strategy.py     # Mock strategy
-│   │   ├── suno_strategy.py     # Suno API strategy
-│   │   └── factory.py           # Reads GENERATOR_STRATEGY from .env
-│   ├── services/
-│   │   └── generation_service.py  # SongGenerationContext
-│   ├── templates/music/
-│   │   ├── login.html
-│   │   └── dashboard.html
-│   └── templatetags/
-│       └── music_filters.py
-├── .env.example
-├── requirements.txt
-└── manage.py
-```
-
----
-
-## API Endpoints
-
-| Method | URL | Description |
-|--------|-----|-------------|
-| GET | `/` | Login page |
-| GET | `/dashboard/` | Dashboard — generate songs and view library |
-| POST | `/logout/` | Log out |
-| GET | `/api/users/` | List all users |
-| POST | `/api/songs/generate/` | Create and generate a song |
-| GET | `/api/songs/<song_id>/download/` | Download song as MP3 |
-
----
-
 ## Deviations from Domain Model
 
 ### 1. User uses UUID instead of Google's ID
