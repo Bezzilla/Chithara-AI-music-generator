@@ -140,4 +140,7 @@ The API responds immediately with `PENDING` status while audio is generated in t
 ![Class Diagram](docs/images/Class_Diagram.png)
 
 
+### Domain Diagram
+
+![Class Diagram](docs/images/domain_diagram.png)
 
