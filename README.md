@@ -139,13 +139,5 @@ The API responds immediately with `PENDING` status while audio is generated in t
 
 ![Class Diagram](docs/images/Class_Diagram.png)
 
----
 
-## Deviations from SRS
-
-None. All SRS requirements are implemented.
-
-
-
----
 
