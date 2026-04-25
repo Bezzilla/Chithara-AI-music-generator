@@ -63,8 +63,25 @@ def dashboard_view(request):
     except User.DoesNotExist:
         request.session.flush()
         return redirect('login')
+    GENRE_ICONS = {'POP': '🎤', 'ROCK': '🎸', 'JAZZ': '🎷', 'CLASSICAL': '🎹', 'HIP_HOP': '🎧', 'OTHER': '🎵'}
     all_songs = Song.objects.filter(owner=user).order_by('-created_at')
     albums = Album.objects.filter(owner=user).prefetch_related('songs')
+    albums_data = {
+        str(album.album_id): {
+            'title': album.title,
+            'songs': [
+                {
+                    'id': str(song.song_id),
+                    'title': song.title,
+                    'genre': song.get_genre_display(),
+                    'genre_key': song.genre,
+                    'icon': GENRE_ICONS.get(song.genre, '🎵'),
+                }
+                for song in album.songs.all()
+            ],
+        }
+        for album in albums
+    }
     discover_songs = (
         Song.objects.filter(visibility='PUBLIC', status='SUCCESS')
         .select_related('owner')
@@ -78,6 +95,7 @@ def dashboard_view(request):
         'songs': all_songs[:10],
         'all_songs': all_songs,
         'albums': albums,
+        'albums_data': albums_data,
         'discover_songs': discover_songs,
         'saved_ids': saved_ids,
     })
@@ -201,6 +219,92 @@ def share_view(request, link_id):
         'is_owner': is_owner,
         'is_saved': is_saved,
     })
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AlbumCreateView(View):
+    def post(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Not authenticated.'}, status=401)
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found.'}, status=404)
+        try:
+            body = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        title = body.get('title', '').strip()
+        if not title:
+            return JsonResponse({'error': 'Title is required.'}, status=400)
+        album = Album.objects.create(title=title, owner=user)
+        return JsonResponse({'album_id': str(album.album_id), 'title': album.title}, status=201)
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AlbumUpdateView(View):
+    def post(self, request, album_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Not authenticated.'}, status=401)
+        try:
+            album = Album.objects.get(album_id=album_id, owner__user_id=user_id)
+        except Album.DoesNotExist:
+            return JsonResponse({'error': 'Album not found.'}, status=404)
+        try:
+            body = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        title = body.get('title', '').strip()
+        if not title:
+            return JsonResponse({'error': 'Title is required.'}, status=400)
+        album.title = title
+        album.save()
+        return JsonResponse({'title': album.title})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AlbumDeleteView(View):
+    def post(self, request, album_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Not authenticated.'}, status=401)
+        try:
+            album = Album.objects.get(album_id=album_id, owner__user_id=user_id)
+        except Album.DoesNotExist:
+            return JsonResponse({'error': 'Album not found.'}, status=404)
+        album.delete()
+        return JsonResponse({'deleted': True})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AlbumSongView(View):
+    def post(self, request, album_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Not authenticated.'}, status=401)
+        try:
+            album = Album.objects.get(album_id=album_id, owner__user_id=user_id)
+        except Album.DoesNotExist:
+            return JsonResponse({'error': 'Album not found.'}, status=404)
+        try:
+            body = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        song_id = body.get('song_id')
+        action = body.get('action')
+        try:
+            song = Song.objects.get(song_id=song_id, owner__user_id=user_id)
+        except Song.DoesNotExist:
+            return JsonResponse({'error': 'Song not found.'}, status=404)
+        if action == 'add':
+            album.songs.add(song)
+            return JsonResponse({'added': True})
+        elif action == 'remove':
+            album.songs.remove(song)
+            return JsonResponse({'removed': True})
+        return JsonResponse({'error': 'Invalid action.'}, status=400)
 
 
 @method_decorator(csrf_exempt, name="dispatch")

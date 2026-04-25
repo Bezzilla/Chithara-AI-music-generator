@@ -9,4 +9,8 @@ urlpatterns = [
     path('songs/<uuid:song_id>/update/', views.SongUpdateView.as_view(), name='song-update'),
     path('songs/<uuid:song_id>/delete/', views.SongDeleteView.as_view(), name='song-delete'),
     path('songs/<uuid:song_id>/save/', views.SaveSongView.as_view(), name='song-save'),
+    path('albums/create/', views.AlbumCreateView.as_view(), name='album-create'),
+    path('albums/<uuid:album_id>/update/', views.AlbumUpdateView.as_view(), name='album-update'),
+    path('albums/<uuid:album_id>/delete/', views.AlbumDeleteView.as_view(), name='album-delete'),
+    path('albums/<uuid:album_id>/songs/', views.AlbumSongView.as_view(), name='album-songs'),
 ]

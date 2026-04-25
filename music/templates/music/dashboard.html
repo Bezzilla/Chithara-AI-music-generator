@@ -325,15 +325,25 @@
     }
     .player-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: #e8e0ff; margin-bottom: 2px; }
     .player-genre { font-size: 12px; color: #8880a0; margin-bottom: 16px; }
-    .progress-bar { height: 3px; background: #2a2440; border-radius: 2px; margin-bottom: 6px; cursor: pointer; position: relative; }
+    .progress-bar {
+      padding: 8px 0; background: transparent;
+      margin-bottom: 6px; cursor: pointer; position: relative;
+    }
+    .progress-bar::before {
+      content: ''; position: absolute;
+      left: 0; right: 0; top: 50%; height: 3px; margin-top: -1.5px;
+      background: #2a2440; border-radius: 2px; pointer-events: none;
+    }
     .progress-fill {
-      height: 100%; width: 0%; background: #8b5cf6; border-radius: 2px;
-      position: relative; transition: width 0.25s linear;
+      height: 3px; width: 0%; background: #8b5cf6; border-radius: 2px;
+      position: absolute; top: 50%; margin-top: -1.5px;
+      pointer-events: none;
     }
     .progress-fill::after {
       content: '';
       position: absolute; right: -4px; top: 50%; transform: translateY(-50%);
       width: 8px; height: 8px; border-radius: 50%; background: #c4a8ff;
+      pointer-events: none;
     }
     .time-row { display: flex; justify-content: space-between; font-size: 11px; color: #6860a0; margin-bottom: 14px; }
     .controls { display: flex; align-items: center; justify-content: center; gap: 16px; }
@@ -391,6 +401,80 @@
     }
     .album-name { font-size: 13px; font-weight: 500; color: #d0c8e8; }
     .album-count { font-size: 11.5px; color: #6860a0; margin-top: 2px; }
+
+    /* ── Album management ── */
+    .album-big-card { position: relative; }
+    .album-card-actions {
+      position: absolute; top: 8px; right: 8px;
+      display: none; gap: 4px;
+    }
+    .album-big-card:hover .album-card-actions { display: flex; }
+    .album-act-btn {
+      background: rgba(10,10,15,0.85);
+      border: 0.5px solid #2a2440;
+      border-radius: 6px;
+      padding: 3px 7px; font-size: 12px;
+      color: #9890b8; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .album-act-btn:hover { color: #c8b8ff; border-color: #3d3460; }
+    .album-act-btn.del:hover { color: #f07090; border-color: #7c3060; }
+    .album-detail-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+    }
+    .back-btn {
+      background: none; border: none; color: #8884a0;
+      cursor: pointer; font-size: 13px; padding: 6px 10px;
+      border-radius: 8px; font-family: 'DM Sans', sans-serif;
+      transition: color 0.15s;
+    }
+    .back-btn:hover { color: #c8b8ff; }
+    .album-detail-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px; font-weight: 700; color: #e8e0ff; flex: 1;
+    }
+    .album-detail-count { font-size: 12px; color: #6860a0; margin-bottom: 16px; padding-left: 2px; }
+    .album-song-row {
+      background: #0e0e16; border: 0.5px solid #1e1e2e;
+      border-radius: 10px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+      cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    }
+    .album-song-row:hover { background: #14121f; border-color: #3d3460; }
+    .album-song-row.active { background: #1a1528; border-color: #7c3aed; }
+    .remove-from-album-btn {
+      background: none; border: none; color: #3a3860;
+      cursor: pointer; font-size: 14px; padding: 4px 6px;
+      border-radius: 4px; transition: color 0.15s; margin-left: auto;
+    }
+    .remove-from-album-btn:hover { color: #f07090; }
+    .add-songs-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; background: #0e0e16;
+      border: 0.5px dashed #2a2440; border-radius: 10px;
+      padding: 12px; color: #6860a0; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-size: 13px;
+      transition: all 0.15s; margin-top: 4px;
+    }
+    .add-songs-btn:hover { border-color: #7c3aed; color: #c8b8ff; }
+    .picker-list { max-height: 300px; overflow-y: auto; margin: 12px 0; }
+    .picker-list::-webkit-scrollbar { width: 4px; }
+    .picker-list::-webkit-scrollbar-track { background: #0e0e16; }
+    .picker-list::-webkit-scrollbar-thumb { background: #2a2440; border-radius: 2px; }
+    .picker-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 0; border-bottom: 0.5px solid #1a1a28;
+    }
+    .picker-item:last-child { border-bottom: none; }
+    .picker-add-btn {
+      background: #7c3aed; color: #f0e8ff; border: none;
+      padding: 5px 14px; border-radius: 6px; font-size: 12px;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      margin-left: auto; flex-shrink: 0; transition: background 0.15s;
+    }
+    .picker-add-btn:hover:not(:disabled) { background: #6d30d4; }
+    .picker-add-btn.added { background: #0f2d28; color: #3dcaa5; cursor: default; }
+    .picker-empty { color: #6860a0; font-size: 13px; padding: 20px 0; text-align: center; }
 
     /* ── Discover ── */
     .discover-header {
@@ -675,20 +759,50 @@
 
         <!-- ── ALBUMS ── -->
         <div id="section-albums" class="page-section" style="display:none">
-          <div class="section-label">My albums ({{ albums.count }})</div>
-          <div class="albums-big-grid">
-            {% for album in albums %}
-            <div class="album-big-card">
-              <div class="album-big-art">🎵</div>
-              <div class="album-big-name">{{ album.title }}</div>
-              <div class="album-big-count">{{ album.songs.count }} song{{ album.songs.count|pluralize }}</div>
-            </div>
-            {% endfor %}
-            <div class="create-album-card">
-              <span>＋</span>
-              <span>New album</span>
+
+          <!-- Grid view -->
+          <div id="albums-grid-view">
+            <div class="section-label" style="margin-bottom:14px;">My albums (<span id="albums-count">{{ albums.count }}</span>)</div>
+            <div class="albums-big-grid" id="albums-big-grid">
+              {% for album in albums %}
+              <div class="album-big-card" id="album-card-{{ album.album_id }}"
+                   data-album-id="{{ album.album_id }}"
+                   data-album-title="{{ album.title|escapejs }}">
+                <div class="album-card-actions">
+                  <button class="album-act-btn rename-album-btn"
+                          data-album-id="{{ album.album_id }}"
+                          data-album-title="{{ album.title|escapejs }}"
+                          title="Rename">✎</button>
+                  <button class="album-act-btn del delete-album-btn"
+                          data-album-id="{{ album.album_id }}"
+                          data-album-title="{{ album.title|escapejs }}"
+                          title="Delete">✕</button>
+                </div>
+                <div class="album-big-art">🎵</div>
+                <div class="album-big-name album-card-name">{{ album.title }}</div>
+                <div class="album-big-count" id="album-count-{{ album.album_id }}">{{ album.songs.count }} song{{ album.songs.count|pluralize }}</div>
+              </div>
+              {% endfor %}
+              <div class="create-album-card" id="create-album-card">
+                <span>＋</span>
+                <span>New album</span>
+              </div>
             </div>
           </div>
+
+          <!-- Detail view -->
+          <div id="album-detail-view" style="display:none">
+            <div class="album-detail-header">
+              <button class="back-btn" id="back-to-albums">← Albums</button>
+              <div class="album-detail-title" id="album-detail-title-text"></div>
+              <button class="album-act-btn rename-album-btn" id="detail-rename-btn" title="Rename">✎</button>
+              <button class="album-act-btn del delete-album-btn" id="detail-delete-btn" title="Delete">✕</button>
+            </div>
+            <div class="album-detail-count" id="album-detail-count"></div>
+            <div id="album-detail-songs-list"></div>
+            <button class="add-songs-btn" id="open-add-songs-btn">＋ Add songs</button>
+          </div>
+
         </div>
 
         <!-- ── DISCOVER ── -->
@@ -785,23 +899,51 @@
           </div>
         </div>
 
-        <div class="albums-section">
-          <div class="section-label">My albums</div>
-          {% for album in albums %}
-          <div class="album-card">
-            <div class="album-art">🎵</div>
-            <div>
-              <div class="album-name">{{ album.title }}</div>
-              <div class="album-count">{{ album.songs.count }} song{{ album.songs.count|pluralize }}</div>
-            </div>
-          </div>
-          {% empty %}
-          <div style="color:#6860a0;font-size:12px;">No albums yet.</div>
-          {% endfor %}
-        </div>
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- Album name modal (create + rename) -->
+<div class="share-modal-overlay" id="album-name-modal" style="display:none">
+  <div class="share-modal">
+    <div class="share-modal-title" id="album-modal-heading">New album</div>
+    <input type="text" id="album-modal-input" class="share-modal-input"
+           style="width:100%;margin:12px 0;" maxlength="255" placeholder="Album name" />
+    <div style="display:flex;gap:8px;">
+      <button class="share-modal-copy" id="album-modal-save" style="flex:1;">Save</button>
+      <button class="share-modal-close" id="album-modal-cancel" style="width:auto;padding:9px 16px;">Cancel</button>
+    </div>
+    <div id="album-modal-error" style="display:none;color:#f07090;font-size:12px;margin-top:8px;"></div>
+  </div>
+</div>
+
+<!-- Delete album confirmation modal -->
+<div class="share-modal-overlay" id="delete-album-modal" style="display:none">
+  <div class="share-modal">
+    <div class="share-modal-title">Delete album</div>
+    <div class="share-modal-sub">
+      Delete <strong id="delete-album-modal-name" style="color:#d8d0f0;"></strong>?
+      Songs inside will not be deleted.
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button id="delete-album-modal-confirm"
+              style="flex:1;background:#7c3060;color:#f0e8ff;border:none;padding:10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">
+        Delete
+      </button>
+      <button class="share-modal-close" id="delete-album-modal-cancel" style="width:auto;padding:10px 16px;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add songs picker modal -->
+<div class="share-modal-overlay" id="add-songs-picker-modal" style="display:none">
+  <div class="share-modal" style="width:420px;">
+    <div class="share-modal-title">Add songs</div>
+    <div class="share-modal-sub" id="add-songs-picker-subtitle"></div>
+    <div class="picker-list" id="add-songs-picker-list"></div>
+    <button class="share-modal-close" id="add-songs-picker-close">Done</button>
   </div>
 </div>
 
@@ -850,6 +992,8 @@
     <button class="share-modal-close" id="share-modal-close">Done</button>
   </div>
 </div>
+
+{{ albums_data|json_script:"albums-data" }}
 
 <script>
   const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -924,9 +1068,24 @@
 
   const playerActionsEl = document.querySelector('.player-actions');
 
-  function loadSong(row) {
+  let albumQueue = [];
+  let albumQueueIndex = -1;
+
+  function loadSong(row, albumCtx) {
+    if (albumCtx) {
+      albumQueue = albumCtx.queue;
+      albumQueueIndex = albumCtx.index;
+    } else {
+      albumQueue = [];
+      albumQueueIndex = -1;
+    }
     document.querySelectorAll('.song-row, .discover-row').forEach(r => r.classList.remove('active'));
+    document.querySelectorAll('.album-song-row').forEach(r => r.classList.remove('active'));
     row.classList.add('active');
+    if (albumCtx) {
+      const detailRows = document.querySelectorAll('#album-detail-songs-list .album-song-row');
+      if (detailRows[albumCtx.index]) detailRows[albumCtx.index].classList.add('active');
+    }
     activeRow = row;
 
     const isMine = !row.classList.contains('discover-row');
@@ -948,6 +1107,9 @@
       playBtn.textContent = '▶'; return;
     }
     document.getElementById('player-genre').textContent = row.dataset.genre + ' · by ' + creator;
+    document.getElementById('total-time').textContent = '—';
+    document.getElementById('current-time').textContent = '0:00';
+    progressFill.style.width = '0%';
     if (row.dataset.audio) {
       audioEl.src = row.dataset.audio;
       audioEl.play().then(() => { playBtn.textContent = '⏸'; }).catch(() => { playBtn.textContent = '▶'; });
@@ -1010,6 +1172,10 @@
     if (active) window.location.href = `/api/songs/${active.dataset.songId}/download/`;
   });
 
+  audioEl.addEventListener('loadedmetadata', () => {
+    document.getElementById('total-time').textContent = formatTime(audioEl.duration);
+  });
+
   audioEl.addEventListener('timeupdate', () => {
     if (!audioEl.duration) return;
     progressFill.style.width = (audioEl.currentTime / audioEl.duration * 100) + '%';
@@ -1028,7 +1194,15 @@
     audioEl.currentTime = Math.min(audioEl.duration || 0, audioEl.currentTime + SEEK_SECONDS);
   });
 
-  audioEl.addEventListener('ended', () => { playBtn.textContent = '▶'; });
+  audioEl.addEventListener('ended', () => {
+    playBtn.textContent = '▶';
+    if (!isLooping && albumQueue.length > 0 && albumQueueIndex < albumQueue.length - 1) {
+      albumQueueIndex++;
+      const nextId = albumQueue[albumQueueIndex];
+      const nextRow = document.querySelector(`.song-row[data-song-id="${nextId}"]`);
+      if (nextRow) loadSong(nextRow, { queue: albumQueue, index: albumQueueIndex });
+    }
+  });
 
   document.getElementById('progress-bar').addEventListener('click', e => {
     if (!audioEl.duration) return;
@@ -1203,6 +1377,272 @@
         btn.textContent = '+ Save';
       }
     });
+  });
+
+  // ── Album management ──
+  const ALBUMS_DATA = JSON.parse(document.getElementById('albums-data').textContent);
+  const GENRE_ART = {'POP':'art-pink','ROCK':'art-teal','JAZZ':'art-amber','CLASSICAL':'art-purple','HIP_HOP':'art-pink','OTHER':'art-purple'};
+  let currentAlbumId = null;
+  let albumModalMode = null; // 'create' | 'rename'
+  let albumModalTargetId = null;
+  let deleteAlbumTargetId = null;
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function songCountLabel(n) { return `${n} song${n !== 1 ? 's' : ''}`; }
+
+  function updateAlbumCountEl(albumId) {
+    const n = (ALBUMS_DATA[albumId]?.songs || []).length;
+    const el = document.getElementById(`album-count-${albumId}`);
+    if (el) el.textContent = songCountLabel(n);
+  }
+
+  function renderAlbumDetail(albumId) {
+    const album = ALBUMS_DATA[albumId];
+    const songs = album?.songs || [];
+    document.getElementById('album-detail-title-text').textContent = album.title;
+    document.getElementById('album-detail-count').textContent = songCountLabel(songs.length);
+    document.getElementById('detail-rename-btn').dataset.albumId = albumId;
+    document.getElementById('detail-delete-btn').dataset.albumId = albumId;
+    const list = document.getElementById('album-detail-songs-list');
+    if (!songs.length) {
+      list.innerHTML = '<div class="empty-state" style="padding:24px 0;">No songs yet — add some below.</div>';
+      return;
+    }
+    const queueIds = songs.map(s => s.id);
+    list.innerHTML = songs.map((s, idx) => `
+      <div class="album-song-row" data-song-id="${s.id}" data-index="${idx}">
+        <div style="font-size:11px;color:#3a3860;width:18px;text-align:center;flex-shrink:0;">${idx + 1}</div>
+        <div class="song-art ${GENRE_ART[s.genre_key]||'art-purple'}" style="width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${s.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:500;color:#d8d0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.title)}</div>
+          <div style="font-size:12px;color:#6860a0;margin-top:2px;">${escHtml(s.genre)}</div>
+        </div>
+        <button class="remove-from-album-btn" data-song-id="${s.id}" title="Remove">✕</button>
+      </div>
+    `).join('');
+    list.querySelectorAll('.album-song-row').forEach(row => {
+      row.addEventListener('click', e => {
+        if (e.target.classList.contains('remove-from-album-btn')) return;
+        const sid = row.dataset.songId;
+        const idx = parseInt(row.dataset.index, 10);
+        const songRow = document.querySelector(`.song-row[data-song-id="${sid}"]`);
+        if (!songRow) return;
+        loadSong(songRow, { queue: queueIds, index: idx });
+      });
+    });
+    list.querySelectorAll('.remove-from-album-btn').forEach(btn => {
+      btn.addEventListener('click', () => removeSongFromAlbum(albumId, btn.dataset.songId));
+    });
+  }
+
+  function openAlbumDetail(albumId) {
+    currentAlbumId = albumId;
+    renderAlbumDetail(albumId);
+    document.getElementById('albums-grid-view').style.display = 'none';
+    document.getElementById('album-detail-view').style.display = 'block';
+  }
+
+  document.getElementById('back-to-albums').addEventListener('click', () => {
+    document.getElementById('album-detail-view').style.display = 'none';
+    document.getElementById('albums-grid-view').style.display = 'block';
+    currentAlbumId = null;
+  });
+
+  async function removeSongFromAlbum(albumId, songId) {
+    const resp = await fetch(`/api/albums/${albumId}/songs/`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({song_id: songId, action: 'remove'}),
+    });
+    if (resp.ok) {
+      ALBUMS_DATA[albumId].songs = ALBUMS_DATA[albumId].songs.filter(s => s.id !== songId);
+      renderAlbumDetail(albumId);
+      updateAlbumCountEl(albumId);
+    }
+  }
+
+  // ── Album name modal ──
+  function openAlbumNameModal(mode, albumId, currentTitle) {
+    albumModalMode = mode;
+    albumModalTargetId = albumId;
+    document.getElementById('album-modal-heading').textContent = mode === 'create' ? 'New album' : 'Rename album';
+    document.getElementById('album-modal-input').value = currentTitle || '';
+    document.getElementById('album-modal-error').style.display = 'none';
+    document.getElementById('album-name-modal').style.display = 'flex';
+    setTimeout(() => { const i = document.getElementById('album-modal-input'); i.focus(); i.select(); }, 50);
+  }
+
+  document.getElementById('album-modal-cancel').addEventListener('click', () => {
+    document.getElementById('album-name-modal').style.display = 'none';
+  });
+
+  document.getElementById('album-modal-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('album-modal-save').click();
+    if (e.key === 'Escape') document.getElementById('album-modal-cancel').click();
+  });
+
+  document.getElementById('album-modal-save').addEventListener('click', async () => {
+    const title = document.getElementById('album-modal-input').value.trim();
+    const errEl = document.getElementById('album-modal-error');
+    if (!title) { errEl.textContent = 'Name cannot be empty.'; errEl.style.display = 'block'; return; }
+    const btn = document.getElementById('album-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    let url = albumModalMode === 'create' ? '/api/albums/create/' : `/api/albums/${albumModalTargetId}/update/`;
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({title}),
+    });
+    const data = await resp.json();
+    btn.disabled = false; btn.textContent = 'Save';
+
+    if (!resp.ok) { errEl.textContent = data.error || 'Failed.'; errEl.style.display = 'block'; return; }
+
+    if (albumModalMode === 'create') {
+      ALBUMS_DATA[data.album_id] = {title: data.title, songs: []};
+      const card = document.createElement('div');
+      card.className = 'album-big-card';
+      card.id = `album-card-${data.album_id}`;
+      card.dataset.albumId = data.album_id;
+      card.innerHTML = `
+        <div class="album-card-actions">
+          <button class="album-act-btn rename-album-btn" data-album-id="${data.album_id}" title="Rename">✎</button>
+          <button class="album-act-btn del delete-album-btn" data-album-id="${data.album_id}" title="Delete">✕</button>
+        </div>
+        <div class="album-big-art">🎵</div>
+        <div class="album-big-name album-card-name">${escHtml(data.title)}</div>
+        <div class="album-big-count" id="album-count-${data.album_id}">0 songs</div>`;
+      wireAlbumCard(card, data.album_id);
+      document.getElementById('albums-big-grid').insertBefore(card, document.getElementById('create-album-card'));
+      const cnt = document.getElementById('albums-count');
+      if (cnt) cnt.textContent = parseInt(cnt.textContent) + 1;
+    } else {
+      ALBUMS_DATA[albumModalTargetId].title = data.title;
+      const card = document.getElementById(`album-card-${albumModalTargetId}`);
+      if (card) card.querySelector('.album-card-name').textContent = data.title;
+      if (currentAlbumId === albumModalTargetId) {
+        document.getElementById('album-detail-title-text').textContent = data.title;
+      }
+    }
+    document.getElementById('album-name-modal').style.display = 'none';
+  });
+
+  // ── Delete album modal ──
+  function openDeleteAlbumModal(albumId) {
+    deleteAlbumTargetId = albumId;
+    document.getElementById('delete-album-modal-name').textContent = ALBUMS_DATA[albumId]?.title || '';
+    document.getElementById('delete-album-modal').style.display = 'flex';
+  }
+
+  document.getElementById('delete-album-modal-cancel').addEventListener('click', () => {
+    document.getElementById('delete-album-modal').style.display = 'none';
+  });
+
+  document.getElementById('delete-album-modal-confirm').addEventListener('click', async () => {
+    const btn = document.getElementById('delete-album-modal-confirm');
+    btn.disabled = true; btn.textContent = 'Deleting…';
+    const resp = await fetch(`/api/albums/${deleteAlbumTargetId}/delete/`, {
+      method: 'POST', headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+    });
+    btn.disabled = false; btn.textContent = 'Delete';
+    if (resp.ok) {
+      delete ALBUMS_DATA[deleteAlbumTargetId];
+      document.getElementById(`album-card-${deleteAlbumTargetId}`)?.remove();
+      const cnt = document.getElementById('albums-count');
+      if (cnt) cnt.textContent = Math.max(0, parseInt(cnt.textContent) - 1);
+      if (currentAlbumId === deleteAlbumTargetId) {
+        document.getElementById('album-detail-view').style.display = 'none';
+        document.getElementById('albums-grid-view').style.display = 'block';
+        currentAlbumId = null;
+      }
+      document.getElementById('delete-album-modal').style.display = 'none';
+    }
+  });
+
+  // ── Add songs picker ──
+  document.getElementById('open-add-songs-btn').addEventListener('click', () => {
+    if (!currentAlbumId) return;
+    const albumSongIds = new Set((ALBUMS_DATA[currentAlbumId]?.songs || []).map(s => s.id));
+    const available = [];
+    document.querySelectorAll('#section-library .song-row').forEach(row => {
+      if (!albumSongIds.has(row.dataset.songId) && row.dataset.status === 'SUCCESS') {
+        available.push({id: row.dataset.songId, title: row.dataset.title, genre: row.dataset.genre, icon: row.dataset.icon});
+      }
+    });
+    document.getElementById('add-songs-picker-subtitle').textContent = `Adding to "${ALBUMS_DATA[currentAlbumId].title}"`;
+    const listEl = document.getElementById('add-songs-picker-list');
+    if (!available.length) {
+      listEl.innerHTML = '<div class="picker-empty">All your songs are already in this album.</div>';
+    } else {
+      listEl.innerHTML = available.map(s => `
+        <div class="picker-item">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;color:#d8d0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(s.title)}</div>
+            <div style="font-size:11.5px;color:#6860a0;">${escHtml(s.genre)}</div>
+          </div>
+          <button class="picker-add-btn"
+                  data-song-id="${s.id}"
+                  data-song-title="${escHtml(s.title)}"
+                  data-song-genre="${escHtml(s.genre)}"
+                  data-song-icon="${escHtml(s.icon)}">Add</button>
+        </div>`).join('');
+      listEl.querySelectorAll('.picker-add-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true; btn.textContent = 'Adding…';
+          const resp = await fetch(`/api/albums/${currentAlbumId}/songs/`, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+            body: JSON.stringify({song_id: btn.dataset.songId, action: 'add'}),
+          });
+          if (resp.ok) {
+            ALBUMS_DATA[currentAlbumId].songs.push({
+              id: btn.dataset.songId, title: btn.dataset.songTitle,
+              genre: btn.dataset.songGenre, genre_key: '', icon: btn.dataset.songIcon,
+            });
+            btn.textContent = 'Added'; btn.classList.add('added');
+            updateAlbumCountEl(currentAlbumId);
+            renderAlbumDetail(currentAlbumId);
+          } else { btn.disabled = false; btn.textContent = 'Add'; }
+        });
+      });
+    }
+    document.getElementById('add-songs-picker-modal').style.display = 'flex';
+  });
+
+  document.getElementById('add-songs-picker-close').addEventListener('click', () => {
+    document.getElementById('add-songs-picker-modal').style.display = 'none';
+  });
+
+  // ── Wire album cards ──
+  function wireAlbumCard(card, albumId) {
+    card.addEventListener('click', e => {
+      if (e.target.tagName === 'BUTTON') return;
+      openAlbumDetail(albumId);
+    });
+    card.querySelector('.rename-album-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      openAlbumNameModal('rename', albumId, ALBUMS_DATA[albumId]?.title);
+    });
+    card.querySelector('.delete-album-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      openDeleteAlbumModal(albumId);
+    });
+  }
+
+  document.querySelectorAll('.album-big-card').forEach(card => wireAlbumCard(card, card.dataset.albumId));
+  document.getElementById('create-album-card').addEventListener('click', () => openAlbumNameModal('create', null, ''));
+
+  document.getElementById('detail-rename-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    openAlbumNameModal('rename', currentAlbumId, ALBUMS_DATA[currentAlbumId]?.title);
+  });
+  document.getElementById('detail-delete-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    openDeleteAlbumModal(currentAlbumId);
   });
 
   // ── Generate form ──
