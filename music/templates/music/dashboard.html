@@ -974,6 +974,18 @@
     currentTimeEl.textContent = formatTime(audioEl.currentTime);
   });
 
+  const SEEK_SECONDS = 10;
+
+  document.getElementById('prev-btn').addEventListener('click', () => {
+    if (!audioEl.src) return;
+    audioEl.currentTime = Math.max(0, audioEl.currentTime - SEEK_SECONDS);
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    if (!audioEl.src) return;
+    audioEl.currentTime = Math.min(audioEl.duration || 0, audioEl.currentTime + SEEK_SECONDS);
+  });
+
   audioEl.addEventListener('ended', () => { playBtn.textContent = '▶'; });
 
   document.getElementById('progress-bar').addEventListener('click', e => {
