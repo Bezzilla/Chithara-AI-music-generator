@@ -662,26 +662,83 @@
               </div>
             </form>
           </div>
+
+<!-- Generate confirmation modal -->
+<div class="share-modal-overlay" id="confirm-gen-modal" style="display:none">
+  <div class="share-modal">
+    <div class="share-modal-title">Confirm generation</div>
+    <div class="share-modal-sub">Review your song details before generating.</div>
+    <div style="background:#0a0a0f;border:0.5px solid #2a2440;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:2.1;">
+      <div><span style="color:#6860a0;display:inline-block;width:100px;">Title</span><span id="confirm-song-title" style="color:#e8e0ff;font-weight:500;"></span></div>
+      <div><span style="color:#6860a0;display:inline-block;width:100px;">Genre</span><span id="confirm-song-genre" style="color:#d8d0f0;"></span></div>
+      <div><span style="color:#6860a0;display:inline-block;width:100px;">Occasion</span><span id="confirm-song-occasion" style="color:#d8d0f0;"></span></div>
+      <div id="confirm-desc-row"><span style="color:#6860a0;display:inline-block;width:100px;vertical-align:top;">Description</span><span id="confirm-song-desc" style="color:#d8d0f0;white-space:pre-wrap;"></span></div>
+    </div>
+    <div class="share-modal-row">
+      <button class="share-modal-copy" id="confirm-gen-confirm" style="flex:1;">✦ Generate</button>
+      <button class="share-modal-close" id="confirm-gen-cancel" style="width:auto;padding:9px 16px;">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
-  var btn = document.getElementById('generate-btn');
-  var loadingBar = document.getElementById('loading-bar');
-  var barFill = document.getElementById('bar-fill');
-  var barPct = document.getElementById('bar-pct');
+  var btn          = document.getElementById('generate-btn');
+  var formError    = document.getElementById('form-error');
+  var modal        = document.getElementById('confirm-gen-modal');
+  var loadingBar   = document.getElementById('loading-bar');
+  var barFill      = document.getElementById('bar-fill');
+  var barPct       = document.getElementById('bar-pct');
   var loadingLabel = document.getElementById('loading-label');
-  var formError = document.getElementById('form-error');
-  btn.onclick = async function() {
+
+  /* Step 1 — validate then show confirm modal */
+  btn.onclick = function() {
     formError.style.display = 'none';
     var title = document.getElementById('input-title').value.trim();
-    if (!title) { formError.textContent = 'Please enter a song title.'; formError.style.display = 'block'; return; }
-    var csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    var occasion = document.getElementById('input-occasion').value;
+    if (!title) {
+      formError.textContent = 'Please enter a song title.';
+      formError.style.display = 'block';
+      return;
+    }
+    var selectedChip    = document.querySelector('.chip.selected');
+    var genreDisplay    = selectedChip ? selectedChip.textContent : document.getElementById('genre-input').value;
+    var occasionEl      = document.getElementById('input-occasion');
+    var occasionDisplay = occasionEl.options[occasionEl.selectedIndex].text;
+    var desc            = document.getElementById('input-description').value.trim();
+
+    document.getElementById('confirm-song-title').textContent    = title;
+    document.getElementById('confirm-song-genre').textContent    = genreDisplay;
+    document.getElementById('confirm-song-occasion').textContent = occasionDisplay;
+    var descRow = document.getElementById('confirm-desc-row');
+    if (desc) {
+      document.getElementById('confirm-song-desc').textContent = desc;
+      descRow.style.display = '';
+    } else {
+      descRow.style.display = 'none';
+    }
+    modal.style.display = 'flex';
+  };
+
+  /* Cancel / click backdrop to close */
+  document.getElementById('confirm-gen-cancel').onclick = function() { modal.style.display = 'none'; };
+  modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
+
+  /* Step 2 — confirmed: call the API */
+  document.getElementById('confirm-gen-confirm').onclick = async function() {
+    var confirmBtn  = this;
+    var title       = document.getElementById('input-title').value.trim();
+    var csrf        = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var occasion    = document.getElementById('input-occasion').value;
     var description = document.getElementById('input-description').value.trim();
-    var genre = document.getElementById('genre-input').value;
+    var genre       = document.getElementById('genre-input').value;
+
+    modal.style.display = 'none';
+    confirmBtn.disabled = true;
     btn.disabled = true;
     loadingBar.style.display = 'flex';
     loadingLabel.textContent = 'Generating "' + title + '"…';
     barFill.style.width = '10%'; barPct.textContent = 'Sending request…';
+
     try {
       barFill.style.width = '30%'; barPct.textContent = 'Contacting AI service…';
       var resp = await fetch('/api/songs/generate/', {
@@ -699,12 +756,14 @@
         formError.textContent = result.error || 'Generation failed.';
         formError.style.display = 'block';
         btn.disabled = false;
+        confirmBtn.disabled = false;
       }
     } catch(e) {
       loadingBar.style.display = 'none';
       formError.textContent = 'Network error: ' + e.message;
       formError.style.display = 'block';
       btn.disabled = false;
+      confirmBtn.disabled = false;
     }
   };
 })();
