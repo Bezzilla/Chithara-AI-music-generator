@@ -30,6 +30,7 @@ class User(models.Model):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     display_name = models.CharField(max_length=255)
+    password_hash = models.CharField(max_length=128, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -103,3 +104,16 @@ class ShareLink(models.Model):
     def __str__(self):
         target = self.song or self.album
         return f"ShareLink → {target}"
+
+
+class SavedSong(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_songs')
+    song = models.ForeignKey(Song, on_delete=models.CASCADE, related_name='saved_by')
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'saved_song'
+        unique_together = [('user', 'song')]
+
+    def __str__(self):
+        return f"{self.user.display_name} saved {self.song.title}"

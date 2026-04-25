@@ -1,0 +1,184 @@
+{% load music_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ song.title }} — Chithara</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a0a0f;
+      color: #e8e6f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #0e0e16;
+      border: 0.5px solid #2a2440;
+      border-radius: 20px;
+      padding: 32px;
+      width: 380px;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .brand { font-family: 'Syne', sans-serif; font-size: 14px; color: #7c5cbf; margin-bottom: 24px; letter-spacing: -0.3px; }
+    .art {
+      width: 140px; height: 140px; border-radius: 16px;
+      background: linear-gradient(135deg, #2a1a4a 0%, #1a0a3a 50%, #0a0a20 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 56px; margin: 0 auto 20px;
+      position: relative; overflow: hidden;
+    }
+    .art::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 70%, rgba(124,60,237,0.3) 0%, transparent 60%);
+    }
+    .song-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: #e8e0ff; margin-bottom: 6px; }
+    .song-meta { font-size: 13px; color: #8880a0; margin-bottom: 14px; }
+    .invite-badge {
+      display: inline-flex; align-items: center;
+      padding: 4px 12px; background: #2d1f0a;
+      border: 0.5px solid #78520a; border-radius: 20px;
+      font-size: 11.5px; color: #f59e0b; margin-bottom: 20px;
+    }
+    .player-bar { height: 3px; background: #2a2440; border-radius: 2px; margin-bottom: 8px; cursor: pointer; }
+    .player-fill { height: 100%; width: 0%; background: #8b5cf6; border-radius: 2px; transition: width 0.25s linear; }
+    .time-row { display: flex; justify-content: space-between; font-size: 11px; color: #6860a0; margin-bottom: 20px; }
+    .play-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: #7c3aed; border: none; color: #f0e8ff;
+      cursor: pointer; font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .play-btn:hover { background: #6d30d4; }
+    .divider { height: 0.5px; background: #1e1e2e; margin-bottom: 20px; }
+    .actions { display: flex; gap: 10px; }
+    .btn-save {
+      flex: 1;
+      background: #7c3aed; color: #f0e8ff;
+      border: none; padding: 11px 16px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-save:hover:not(:disabled) { background: #6d30d4; }
+    .btn-save:disabled { background: #2a1a4a; color: #7c5cbf; cursor: default; }
+    .btn-save.saved { background: #0f2d28; color: #3dcaa5; border: 0.5px solid #1d5a46; }
+    .btn-download {
+      flex: 1;
+      background: #16141f; color: #c8b8ff;
+      border: 0.5px solid #2a2440; padding: 11px 16px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      text-decoration: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .btn-download:hover { background: #1e1a30; border-color: #3d3460; }
+    .login-hint { font-size: 11.5px; color: #6860a0; margin-top: 12px; }
+    .login-hint a { color: #8b5cf6; text-decoration: none; }
+    .login-hint a:hover { color: #c8b8ff; }
+    .owner-note { font-size: 12px; color: #6860a0; text-align: center; margin-top: 4px; }
+    audio { display: none; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">Chithara</div>
+  <div class="art">{{ song.genre|genre_icon }}</div>
+  <div class="song-title">{{ song.title }}</div>
+  <div class="song-meta">{{ song.get_genre_display }} · {{ song.get_occasion_display }}</div>
+  <div class="invite-badge">Invite Only</div>
+
+  <div class="player-bar" id="bar">
+    <div class="player-fill" id="fill"></div>
+  </div>
+  <div class="time-row">
+    <span id="cur">0:00</span>
+    <span id="tot">{{ song.duration|format_duration }}</span>
+  </div>
+  <button class="play-btn" id="play-btn">▶</button>
+
+  <div class="divider"></div>
+
+  <div class="actions">
+    {% if is_owner %}
+      <button class="btn-save saved" disabled>Your song</button>
+    {% elif is_saved %}
+      <button class="btn-save saved" id="save-btn" disabled>Saved</button>
+    {% elif viewer %}
+      <button class="btn-save" id="save-btn" data-song-id="{{ song.song_id }}">Add to library</button>
+    {% else %}
+      <a href="/login/?next={{ request.path }}" class="btn-download" style="background:#7c3aed;border:none;color:#f0e8ff;">Add to library</a>
+    {% endif %}
+    <a class="btn-download" href="/api/songs/{{ song.song_id }}/download/" download>Download</a>
+  </div>
+
+  {% if not viewer %}
+  <div class="login-hint">Sign in to save songs to your library.</div>
+  {% endif %}
+</div>
+
+<audio id="audio" {% if song.audio_url %}src="{{ song.audio_url }}"{% endif %}></audio>
+
+<script>
+  const audio = document.getElementById('audio');
+  const playBtn = document.getElementById('play-btn');
+  const fill = document.getElementById('fill');
+  const cur = document.getElementById('cur');
+
+  function fmt(s) {
+    const t = Math.floor(s);
+    return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (!audio.src) return;
+    if (audio.paused) { audio.play(); playBtn.textContent = '⏸'; }
+    else              { audio.pause(); playBtn.textContent = '▶'; }
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    if (!audio.duration) return;
+    fill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+    cur.textContent = fmt(audio.currentTime);
+  });
+
+  audio.addEventListener('ended', () => { playBtn.textContent = '▶'; });
+
+  document.getElementById('bar').addEventListener('click', e => {
+    if (!audio.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+  });
+
+  const saveBtn = document.getElementById('save-btn');
+  if (saveBtn && saveBtn.dataset.songId) {
+    saveBtn.addEventListener('click', async () => {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      const resp = await fetch(`/api/songs/${saveBtn.dataset.songId}/save/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+      });
+      if (resp.ok) {
+        saveBtn.textContent = 'Saved';
+        saveBtn.classList.add('saved');
+      } else {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Add to library';
+      }
+    });
+  }
+</script>
+</body>
+</html>

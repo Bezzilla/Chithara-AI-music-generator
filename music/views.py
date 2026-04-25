@@ -1,11 +1,12 @@
 import json
+import uuid
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout as auth_logout
-from .models import User, Song, Album
+from .models import User, Song, Album, ShareLink, SavedSong
 from .services.generation_service import SongGenerationContext
 
 
@@ -14,19 +15,37 @@ def login_view(request):
         return redirect('dashboard')
     error = None
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip()
-        display_name = request.POST.get('display_name', '').strip()
+        from django.contrib.auth.hashers import make_password, check_password
+        email = request.POST.get('email', '').strip().lower()
+        password = request.POST.get('password', '')
         if not email:
             error = 'Email is required.'
+        elif not password:
+            error = 'Password is required.'
         else:
-            if not display_name:
+            try:
+                user = User.objects.get(email__iexact=email)
+                if user.password_hash:
+                    if not check_password(password, user.password_hash):
+                        error = 'Incorrect password.'
+                    else:
+                        request.session['user_id'] = str(user.user_id)
+                        return redirect('dashboard')
+                else:
+                    # Google OAuth user — set password and log in
+                    user.password_hash = make_password(password)
+                    user.save()
+                    request.session['user_id'] = str(user.user_id)
+                    return redirect('dashboard')
+            except User.DoesNotExist:
                 display_name = email.split('@')[0]
-            user, _ = User.objects.get_or_create(
-                email=email,
-                defaults={'display_name': display_name}
-            )
-            request.session['user_id'] = str(user.user_id)
-            return redirect('dashboard')
+                user = User.objects.create(
+                    email=email,
+                    display_name=display_name,
+                    password_hash=make_password(password),
+                )
+                request.session['user_id'] = str(user.user_id)
+                return redirect('dashboard')
     return render(request, 'music/login.html', {'error': error})
 
 
@@ -45,14 +64,22 @@ def dashboard_view(request):
         request.session.flush()
         return redirect('login')
     all_songs = Song.objects.filter(owner=user).order_by('-created_at')
-    public_songs = Song.objects.filter(owner=user, visibility='PUBLIC').order_by('-created_at')
     albums = Album.objects.filter(owner=user).prefetch_related('songs')
+    discover_songs = (
+        Song.objects.filter(visibility='PUBLIC', status='SUCCESS')
+        .select_related('owner')
+        .order_by('-created_at')[:60]
+    )
+    saved_ids = set(
+        SavedSong.objects.filter(user=user).values_list('song_id', flat=True)
+    )
     return render(request, 'music/dashboard.html', {
         'user': user,
         'songs': all_songs[:10],
         'all_songs': all_songs,
-        'public_songs': public_songs,
         'albums': albums,
+        'discover_songs': discover_songs,
+        'saved_ids': saved_ids,
     })
 
 
@@ -131,11 +158,69 @@ class SongVisibilityView(View):
         except Song.DoesNotExist:
             return JsonResponse({'error': 'Song not found.'}, status=404)
         visibility = body.get('visibility', 'PRIVATE')
-        if visibility not in ('PUBLIC', 'PRIVATE'):
+        if visibility not in ('PUBLIC', 'PRIVATE', 'INVITE'):
             return JsonResponse({'error': 'Invalid visibility.'}, status=400)
         song.visibility = visibility
         song.save()
-        return JsonResponse({'visibility': song.visibility})
+        response_data = {'visibility': song.visibility}
+        if visibility == 'INVITE':
+            share_link = song.share_links.first()
+            if not share_link:
+                link_id = uuid.uuid4()
+                share_link = ShareLink(link_id=link_id, url=f'/share/{link_id}/', song=song)
+                share_link.save()
+            response_data['share_url'] = share_link.url
+        return JsonResponse(response_data)
+
+
+def share_view(request, link_id):
+    try:
+        share_link = ShareLink.objects.select_related('song__owner').get(link_id=link_id)
+    except ShareLink.DoesNotExist:
+        raise Http404
+    song = share_link.song
+    if not song or song.visibility != 'INVITE':
+        raise Http404
+
+    viewer = None
+    is_owner = False
+    is_saved = False
+    user_id = request.session.get('user_id')
+    if user_id:
+        try:
+            viewer = User.objects.get(user_id=user_id)
+            is_owner = (str(song.owner_id) == str(viewer.user_id))
+            if not is_owner:
+                is_saved = SavedSong.objects.filter(user=viewer, song=song).exists()
+        except User.DoesNotExist:
+            pass
+
+    return render(request, 'music/share.html', {
+        'song': song,
+        'viewer': viewer,
+        'is_owner': is_owner,
+        'is_saved': is_saved,
+    })
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class SaveSongView(View):
+    def post(self, request, song_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Not authenticated.'}, status=401)
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found.'}, status=404)
+        try:
+            song = Song.objects.get(song_id=song_id)
+        except Song.DoesNotExist:
+            return JsonResponse({'error': 'Song not found.'}, status=404)
+        if str(song.owner_id) == str(user.user_id):
+            return JsonResponse({'error': 'You already own this song.'}, status=400)
+        _, created = SavedSong.objects.get_or_create(user=user, song=song)
+        return JsonResponse({'saved': True, 'already_saved': not created})
 
 
 class SongDownloadView(View):

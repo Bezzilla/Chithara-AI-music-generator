@@ -243,6 +243,7 @@
     .badge { font-size: 10.5px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
     .badge-pub     { background: #0f2d28; color: #3dcaa5; border: 0.5px solid #1d5a46; }
     .badge-priv    { background: #1e1e2e; color: #6860a0; border: 0.5px solid #2a2440; }
+    .badge-invite  { background: #2d1f0a; color: #f59e0b; border: 0.5px solid #78520a; }
     .badge-pending { background: #1a1528; color: #8b5cf6; border: 0.5px solid #4c2a8a; animation: pulse 1.5s ease-in-out infinite; }
     .badge-failed  { background: #2d1020; color: #f07090; border: 0.5px solid #7c3060; }
     .song-dur { font-size: 12px; color: #6860a0; min-width: 36px; text-align: right; }
@@ -253,7 +254,8 @@
       text-decoration: none;
     }
     .action-btn:hover { color: #c8b8ff; }
-    .action-btn.pub-active { color: #3dcaa5; }
+    .action-btn.pub-active    { color: #3dcaa5; }
+    .action-btn.invite-active { color: #f59e0b; }
     .empty-state { color: #6860a0; font-size: 13px; padding: 32px 0; text-align: center; }
 
     /* ── Albums grid ── */
@@ -297,19 +299,6 @@
     .create-album-card:hover { border-color: #7c3aed; }
     .create-album-card span:first-child { font-size: 24px; color: #3a3870; }
     .create-album-card span:last-child { font-size: 12px; color: #50508a; }
-
-    /* ── Shared section ── */
-    .shared-banner {
-      background: #0e0e16;
-      border: 0.5px solid #2a2440;
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 20px;
-      font-size: 12.5px;
-      color: #8884a0;
-      line-height: 1.5;
-    }
-    .shared-banner strong { color: #c8b8ff; }
 
     /* ── Right panel ── */
     .right-panel {
@@ -380,7 +369,8 @@
       transition: all 0.15s;
     }
     .player-action-btn:hover { background: #1e1a30; color: #c8b8ff; border-color: #3d3460; }
-    .player-action-btn.pub-active { color: #3dcaa5; border-color: #1d5a46; background: #0f2d28; }
+    .player-action-btn.pub-active    { color: #3dcaa5; border-color: #1d5a46; background: #0f2d28; }
+    .player-action-btn.invite-active { color: #f59e0b; border-color: #78520a; background: #2d1f0a; }
 
     .albums-section { padding: 16px 20px; flex: 1; overflow-y: auto; }
     .albums-section::-webkit-scrollbar { width: 6px; }
@@ -401,6 +391,95 @@
     }
     .album-name { font-size: 13px; font-weight: 500; color: #d0c8e8; }
     .album-count { font-size: 11.5px; color: #6860a0; margin-top: 2px; }
+
+    /* ── Discover ── */
+    .discover-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .discover-count {
+      font-size: 11px;
+      color: #6860a0;
+    }
+    .discover-row {
+      background: #0e0e16;
+      border: 0.5px solid #1e1e2e;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: border-color 0.15s;
+      margin-bottom: 8px;
+    }
+    .discover-row:hover { border-color: #2a2440; background: #12101a; }
+    .discover-row.active { border-color: #7c3aed; }
+    .creator-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .creator-avatar {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 600; color: #f0e8ff;
+      flex-shrink: 0;
+    }
+    .save-btn {
+      background: none; border: 0.5px solid #2a2440;
+      color: #6860a0; cursor: pointer;
+      font-size: 13px; padding: 4px 8px;
+      border-radius: 6px; font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .save-btn:hover { color: #c8b8ff; border-color: #3d3460; }
+    .save-btn.saved { color: #3dcaa5; border-color: #1d5a46; background: #0a1a14; }
+    .discover-empty {
+      text-align: center;
+      padding: 48px 0;
+      color: #6860a0;
+      font-size: 13px;
+    }
+    .discover-empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+
+    /* ── Share modal ── */
+    .share-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+    }
+    .share-modal {
+      background: #0e0e16;
+      border: 0.5px solid #2a2440;
+      border-radius: 14px;
+      padding: 24px;
+      width: 360px;
+      max-width: 90vw;
+    }
+    .share-modal-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: #e8e0ff; margin-bottom: 4px; }
+    .share-modal-sub { font-size: 12px; color: #6860a0; margin-bottom: 16px; }
+    .share-modal-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .share-modal-input {
+      flex: 1; background: #16141f; border: 0.5px solid #2a2440;
+      border-radius: 8px; padding: 9px 12px;
+      font-size: 11.5px; color: #c8b8ff; outline: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .share-modal-copy {
+      background: #7c3aed; color: #f0e8ff; border: none;
+      padding: 9px 16px; border-radius: 8px;
+      font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    }
+    .share-modal-copy:hover { background: #6d30d4; }
+    .share-modal-close {
+      width: 100%; background: #16141f; border: 0.5px solid #2a2440;
+      border-radius: 8px; padding: 9px; font-size: 12.5px;
+      color: #8884a0; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    }
+    .share-modal-close:hover { color: #c8b8ff; }
   </style>
 </head>
 <body>
@@ -419,8 +498,8 @@
       <div class="nav-item" data-section="albums" data-title="Albums">
         <span class="nav-icon">♫</span> Albums
       </div>
-      <div class="nav-item" data-section="shared" data-title="Shared">
-        <span class="nav-icon">⊕</span> Shared
+      <div class="nav-item" data-section="discover" data-title="Discover">
+        <span class="nav-icon">✧</span> Discover
       </div>
     </nav>
     <div class="sidebar-footer">
@@ -524,6 +603,8 @@
                 <span class="badge badge-failed">Failed</span>
               {% elif song.visibility == 'PUBLIC' %}
                 <span class="badge badge-pub">Public</span>
+              {% elif song.visibility == 'INVITE' %}
+                <span class="badge badge-invite">Invite</span>
               {% else %}
                 <span class="badge badge-priv">Private</span>
               {% endif %}
@@ -562,16 +643,18 @@
                 <span class="badge badge-failed">Failed</span>
               {% elif song.visibility == 'PUBLIC' %}
                 <span class="badge badge-pub">Public</span>
+              {% elif song.visibility == 'INVITE' %}
+                <span class="badge badge-invite">Invite</span>
               {% else %}
                 <span class="badge badge-priv">Private</span>
               {% endif %}
               <div class="song-dur">{{ song.duration|format_duration }}</div>
               <button class="action-btn play-song-btn" title="Play">▶</button>
               {% if song.status == 'SUCCESS' %}
-              <button class="action-btn share-btn {% if song.visibility == 'PUBLIC' %}pub-active{% endif %}"
+              <button class="action-btn share-btn {% if song.visibility == 'PUBLIC' %}pub-active{% elif song.visibility == 'INVITE' %}invite-active{% endif %}"
                       data-song-id="{{ song.song_id }}"
                       data-visibility="{{ song.visibility }}"
-                      title="{% if song.visibility == 'PUBLIC' %}Make private{% else %}Make public{% endif %}">⊕</button>
+                      title="{% if song.visibility == 'PUBLIC' %}Make invite-only{% elif song.visibility == 'INVITE' %}Make private{% else %}Make public{% endif %}">⊕</button>
               {% endif %}
               <a class="action-btn" href="/api/songs/{{ song.song_id }}/download/" title="Download" download>⇩</a>
             </div>
@@ -599,38 +682,57 @@
           </div>
         </div>
 
-        <!-- ── SHARED ── -->
-        <div id="section-shared" class="page-section" style="display:none">
-          <div class="shared-banner">
-            Songs marked <strong>Public</strong> appear here and are visible to anyone with the link.
-            Use the <strong>⊕</strong> button in Library to toggle a song public or private.
+        <!-- ── DISCOVER ── -->
+        <div id="section-discover" class="page-section" style="display:none">
+          <div class="discover-header">
+            <div class="section-label" style="margin-bottom:0;">Public songs from everyone</div>
+            <div class="discover-count">{{ discover_songs|length }} song{{ discover_songs|length|pluralize }}</div>
           </div>
-          <div class="section-label">Public songs ({{ public_songs.count }})</div>
+
+          {% if discover_songs %}
           <div class="songs-grid">
-            {% for song in public_songs %}
-            <div class="song-row"
+            {% for song in discover_songs %}
+            <div class="discover-row"
                  data-song-id="{{ song.song_id }}"
                  data-audio="{{ song.audio_url|default:'' }}"
                  data-title="{{ song.title }}"
                  data-genre="{{ song.get_genre_display }}"
                  data-icon="{{ song.genre|genre_icon }}"
                  data-status="{{ song.status }}"
-                 data-visibility="{{ song.visibility }}">
-              <div class="song-num">{{ forloop.counter }}</div>
+                 data-visibility="{{ song.visibility }}"
+                 data-owner="{{ song.owner.display_name }}">
               <div class="song-art {{ song.genre|genre_art_class }}">{{ song.genre|genre_icon }}</div>
-              <div class="song-meta">
+              <div class="song-meta" style="flex:1;min-width:0;">
                 <div class="song-title">{{ song.title }}</div>
-                <div class="song-sub">{{ song.get_genre_display }} · {{ song.get_occasion_display }}</div>
+                <div class="song-sub" style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                  <span class="creator-chip">
+                    <span class="creator-avatar">{{ song.owner.display_name|initials }}</span>
+                    <span>{{ song.owner.display_name }}</span>
+                  </span>
+                  <span style="color:#3a3860;">·</span>
+                  <span>{{ song.get_genre_display }}</span>
+                </div>
               </div>
               <span class="badge badge-pub">Public</span>
               <div class="song-dur">{{ song.duration|format_duration }}</div>
               <button class="action-btn play-song-btn" title="Play">▶</button>
+              {% if song.owner != user %}
+                {% if song.song_id in saved_ids %}
+                <button class="save-btn saved" data-song-id="{{ song.song_id }}" disabled>Saved</button>
+                {% else %}
+                <button class="save-btn" data-song-id="{{ song.song_id }}">+ Save</button>
+                {% endif %}
+              {% endif %}
               <a class="action-btn" href="/api/songs/{{ song.song_id }}/download/" title="Download" download>⇩</a>
             </div>
-            {% empty %}
-            <div class="empty-state">No public songs yet. Use ⊕ in Library to share a song.</div>
             {% endfor %}
           </div>
+          {% else %}
+          <div class="discover-empty">
+            <div class="discover-empty-icon">✧</div>
+            No public songs yet.<br>Be the first to share one from your Library.
+          </div>
+          {% endif %}
         </div>
 
       </div>
@@ -694,6 +796,19 @@
   </div>
 </div>
 
+<!-- Share modal -->
+<div class="share-modal-overlay" id="share-modal" style="display:none">
+  <div class="share-modal">
+    <div class="share-modal-title">Invite-only link</div>
+    <div class="share-modal-sub">Only people with this link can listen.</div>
+    <div class="share-modal-row">
+      <input type="text" id="share-modal-url" readonly class="share-modal-input" />
+      <button class="share-modal-copy" id="share-modal-copy">Copy</button>
+    </div>
+    <button class="share-modal-close" id="share-modal-close">Done</button>
+  </div>
+</div>
+
 <script>
   const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -730,29 +845,56 @@
     return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
   }
 
+  const VISIBILITY_CYCLE = { 'PRIVATE': 'PUBLIC', 'PUBLIC': 'INVITE', 'INVITE': 'PRIVATE' };
+
   const visibilityBtn = document.getElementById('player-visibility-btn');
   const visibilityLabel = document.getElementById('player-visibility-label');
   let activeRow = null;
 
   function updateVisibilityBtn(visibility) {
-    const isPub = visibility === 'PUBLIC';
-    visibilityBtn.classList.toggle('pub-active', isPub);
-    visibilityLabel.textContent = isPub ? 'Public' : 'Private';
-    visibilityBtn.title = isPub ? 'Make private' : 'Make public';
+    visibilityBtn.classList.toggle('pub-active', visibility === 'PUBLIC');
+    visibilityBtn.classList.toggle('invite-active', visibility === 'INVITE');
+    if (visibility === 'PUBLIC')       { visibilityLabel.textContent = 'Public';      visibilityBtn.title = 'Make invite-only'; }
+    else if (visibility === 'INVITE') { visibilityLabel.textContent = 'Invite Only'; visibilityBtn.title = 'Make private'; }
+    else                              { visibilityLabel.textContent = 'Private';     visibilityBtn.title = 'Make public'; }
   }
+
+  function showShareModal(shareUrl) {
+    document.getElementById('share-modal-url').value = window.location.origin + shareUrl;
+    document.getElementById('share-modal').style.display = 'flex';
+  }
+
+  document.getElementById('share-modal-close').addEventListener('click', () => {
+    document.getElementById('share-modal').style.display = 'none';
+  });
+
+  document.getElementById('share-modal-copy').addEventListener('click', () => {
+    const input = document.getElementById('share-modal-url');
+    navigator.clipboard.writeText(input.value).then(() => {
+      const btn = document.getElementById('share-modal-copy');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    });
+  });
 
   activeRow = document.querySelector('.song-row') || null;
   if (activeRow) updateVisibilityBtn(activeRow.dataset.visibility || 'PRIVATE');
 
+  const playerActionsEl = document.querySelector('.player-actions');
+
   function loadSong(row) {
-    document.querySelectorAll('.song-row').forEach(r => r.classList.remove('active'));
+    document.querySelectorAll('.song-row, .discover-row').forEach(r => r.classList.remove('active'));
     row.classList.add('active');
     activeRow = row;
+
+    const isMine = !row.classList.contains('discover-row');
+    const creator = row.dataset.owner || '{{ user.display_name }}';
+
     document.getElementById('player-title').textContent = row.dataset.title;
-    document.getElementById('player-genre').textContent =
-      row.dataset.genre + ' · by {{ user.display_name }}';
     document.getElementById('player-icon').textContent = row.dataset.icon;
     updateVisibilityBtn(row.dataset.visibility || 'PRIVATE');
+
+    playerActionsEl.style.display = isMine ? 'flex' : 'none';
 
     const status = row.dataset.status;
     if (status === 'PENDING') {
@@ -763,29 +905,35 @@
       document.getElementById('player-genre').textContent = 'Generation failed';
       playBtn.textContent = '▶'; return;
     }
+    document.getElementById('player-genre').textContent = row.dataset.genre + ' · by ' + creator;
     if (row.dataset.audio) {
       audioEl.src = row.dataset.audio;
       audioEl.play().then(() => { playBtn.textContent = '⏸'; }).catch(() => { playBtn.textContent = '▶'; });
     }
   }
 
+  function applyBadge(badge, visibility) {
+    if (!badge || badge.classList.contains('badge-pending') || badge.classList.contains('badge-failed')) return;
+    if (visibility === 'PUBLIC')       { badge.className = 'badge badge-pub';    badge.textContent = 'Public'; }
+    else if (visibility === 'INVITE') { badge.className = 'badge badge-invite'; badge.textContent = 'Invite'; }
+    else                              { badge.className = 'badge badge-priv';   badge.textContent = 'Private'; }
+  }
+
   visibilityBtn.addEventListener('click', async () => {
     if (!activeRow || activeRow.dataset.status !== 'SUCCESS') return;
     const current = activeRow.dataset.visibility || 'PRIVATE';
-    const next = current === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
+    const next = VISIBILITY_CYCLE[current] || 'PRIVATE';
     const resp = await fetch(`/api/songs/${activeRow.dataset.songId}/visibility/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
       body: JSON.stringify({ visibility: next }),
     });
     if (resp.ok) {
+      const data = await resp.json();
       activeRow.dataset.visibility = next;
       updateVisibilityBtn(next);
-      const badge = activeRow.querySelector('.badge');
-      if (badge && !badge.classList.contains('badge-pending') && !badge.classList.contains('badge-failed')) {
-        badge.className = 'badge ' + (next === 'PUBLIC' ? 'badge-pub' : 'badge-priv');
-        badge.textContent = next === 'PUBLIC' ? 'Public' : 'Private';
-      }
+      applyBadge(activeRow.querySelector('.badge'), next);
+      if (next === 'INVITE' && data.share_url) showShareModal(data.share_url);
     }
   });
 
@@ -797,7 +945,10 @@
   });
 
   document.querySelectorAll('.play-song-btn').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); loadSong(btn.closest('.song-row')); });
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      loadSong(btn.closest('.song-row, .discover-row'));
+    });
   });
 
   playBtn.addEventListener('click', () => {
@@ -837,22 +988,58 @@
       e.stopPropagation();
       const songId = btn.dataset.songId;
       const current = btn.dataset.visibility;
-      const next = current === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
+      const next = VISIBILITY_CYCLE[current] || 'PRIVATE';
       const resp = await fetch(`/api/songs/${songId}/visibility/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
         body: JSON.stringify({ visibility: next }),
       });
       if (resp.ok) {
+        const data = await resp.json();
         btn.dataset.visibility = next;
         btn.classList.toggle('pub-active', next === 'PUBLIC');
-        btn.title = next === 'PUBLIC' ? 'Make private' : 'Make public';
-        const row = btn.closest('.song-row');
-        const badge = row.querySelector('.badge');
-        if (badge) {
-          badge.className = 'badge ' + (next === 'PUBLIC' ? 'badge-pub' : 'badge-priv');
-          badge.textContent = next === 'PUBLIC' ? 'Public' : 'Private';
-        }
+        btn.classList.toggle('invite-active', next === 'INVITE');
+        if (next === 'PUBLIC')       btn.title = 'Make invite-only';
+        else if (next === 'INVITE') btn.title = 'Make private';
+        else                        btn.title = 'Make public';
+        applyBadge(btn.closest('.song-row').querySelector('.badge'), next);
+        if (next === 'INVITE' && data.share_url) showShareModal(data.share_url);
+      }
+    });
+  });
+
+  // ── Copy link buttons (Shared section) ──
+  document.querySelectorAll('.copy-link-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      showShareModal(btn.dataset.shareUrl);
+    });
+  });
+
+  // ── Discover: play rows ──
+  document.querySelectorAll('.discover-row').forEach(r => {
+    r.addEventListener('click', e => {
+      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+      loadSong(r);
+    });
+  });
+
+  // ── Discover: save buttons ──
+  document.querySelectorAll('.save-btn:not(.saved)').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      const resp = await fetch(`/api/songs/${btn.dataset.songId}/save/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      });
+      if (resp.ok) {
+        btn.textContent = 'Saved';
+        btn.classList.add('saved');
+      } else {
+        btn.disabled = false;
+        btn.textContent = '+ Save';
       }
     });
   });
@@ -906,6 +1093,33 @@
       formError.style.display = 'block';
     } finally {
       generateBtn.disabled = false;
+    }
+  });
+
+  document.getElementById('player-share-btn').addEventListener('click', async () => {
+    if (!activeRow || activeRow.dataset.status !== 'SUCCESS') return;
+    const current = activeRow.dataset.visibility || 'PRIVATE';
+    if (current === 'INVITE') {
+      const resp = await fetch(`/api/songs/${activeRow.dataset.songId}/visibility/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ visibility: 'INVITE' }),
+      });
+      if (resp.ok) { const data = await resp.json(); if (data.share_url) showShareModal(data.share_url); }
+    } else {
+      const next = 'INVITE';
+      const resp = await fetch(`/api/songs/${activeRow.dataset.songId}/visibility/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ visibility: next }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        activeRow.dataset.visibility = next;
+        updateVisibilityBtn(next);
+        applyBadge(activeRow.querySelector('.badge'), next);
+        if (data.share_url) showShareModal(data.share_url);
+      }
     }
   });
 

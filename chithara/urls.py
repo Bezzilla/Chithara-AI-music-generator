@@ -11,4 +11,5 @@ urlpatterns = [
     path('login/', music_views.login_view, name='login'),
     path('logout/', music_views.logout_view, name='logout'),
     path('dashboard/', music_views.dashboard_view, name='dashboard'),
+    path('share/<uuid:link_id>/', music_views.share_view, name='song-share'),
 ]
