@@ -658,8 +658,8 @@
                 <input type="hidden" name="genre" id="genre-input" value="CLASSICAL" />
               </div>
               <div class="form-bottom">
-                <div class="hint">All fields validated before generation</div>
-                <button class="confirm-btn" type="submit" id="generate-btn">Confirm &amp; Generate</button>
+                <div class="hint">You'll review your input before generating</div>
+                <button class="confirm-btn" type="submit" id="generate-btn">Preview &amp; Generate →</button>
               </div>
             </form>
           </div>
@@ -767,8 +767,12 @@
               {% for album in albums %}
               <div class="album-big-card" id="album-card-{{ album.album_id }}"
                    data-album-id="{{ album.album_id }}"
-                   data-album-title="{{ album.title|escapejs }}">
+                   data-album-title="{{ album.title|escapejs }}"
+                   data-visibility="{{ album.visibility }}">
                 <div class="album-card-actions">
+                  <button class="album-act-btn album-share-btn"
+                          data-album-id="{{ album.album_id }}"
+                          title="Share">⤴</button>
                   <button class="album-act-btn rename-album-btn"
                           data-album-id="{{ album.album_id }}"
                           data-album-title="{{ album.title|escapejs }}"
@@ -799,6 +803,14 @@
               <button class="album-act-btn del delete-album-btn" id="detail-delete-btn" title="Delete">✕</button>
             </div>
             <div class="album-detail-count" id="album-detail-count"></div>
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+              <button class="player-action-btn" id="album-visibility-btn" style="flex:1;">
+                <span class="player-action-label" id="album-visibility-label">Private</span>
+              </button>
+              <button class="player-action-btn" id="album-share-display-btn" style="flex:1;display:none;">
+                <span class="player-action-label">Copy link</span>
+              </button>
+            </div>
             <div id="album-detail-songs-list"></div>
             <button class="add-songs-btn" id="open-add-songs-btn">＋ Add songs</button>
           </div>
@@ -856,6 +868,34 @@
             No public songs yet.<br>Be the first to share one from your Library.
           </div>
           {% endif %}
+
+          <!-- Public Albums -->
+          <div class="discover-header" style="margin-top:28px;">
+            <div class="section-label" style="margin-bottom:0;">Public albums from everyone</div>
+            <div class="discover-count">{{ discover_albums|length }} album{{ discover_albums|length|pluralize }}</div>
+          </div>
+          {% if discover_albums %}
+          <div class="albums-big-grid" style="margin-top:12px;">
+            {% for album in discover_albums %}
+            <a href="/albums/{{ album.album_id }}/" class="album-big-card" style="text-decoration:none;display:block;">
+              <div class="album-big-art">🎵</div>
+              <div class="album-big-name">{{ album.title }}</div>
+              <div class="album-big-count">
+                <span class="creator-chip" style="margin-bottom:4px;display:inline-flex;">
+                  <span class="creator-avatar">{{ album.owner.display_name|initials }}</span>
+                  <span>{{ album.owner.display_name }}</span>
+                </span>
+              </div>
+              <div style="font-size:11px;color:#6860a0;margin-top:2px;">{{ album.songs.count }} song{{ album.songs.count|pluralize }}</div>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="discover-empty" style="margin-top:8px;">
+            <div class="discover-empty-icon">🎵</div>
+            No public albums yet.<br>Set an album to Public from the Albums tab.
+          </div>
+          {% endif %}
         </div>
 
       </div>
@@ -901,6 +941,36 @@
 
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- Generation confirmation modal -->
+<div class="share-modal-overlay" id="gen-confirm-modal" style="display:none">
+  <div class="share-modal">
+    <div class="share-modal-title">Confirm generation</div>
+    <div class="share-modal-sub">Review your song details before generating.</div>
+    <div style="background:#16141f;border:0.5px solid #2a2440;border-radius:10px;padding:14px 16px;margin:14px 0;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font-size:11.5px;color:#6860a0;">Title</span>
+        <span id="gc-title" style="font-size:13.5px;font-weight:500;color:#d8d0f0;text-align:right;max-width:220px;word-break:break-word;"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font-size:11.5px;color:#6860a0;">Occasion</span>
+        <span id="gc-occasion" style="font-size:13.5px;color:#d8d0f0;"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font-size:11.5px;color:#6860a0;">Genre</span>
+        <span id="gc-genre" style="font-size:13.5px;color:#d8d0f0;"></span>
+      </div>
+      <div id="gc-desc-row" style="display:flex;flex-direction:column;gap:4px;">
+        <span style="font-size:11.5px;color:#6860a0;">Description</span>
+        <span id="gc-desc" style="font-size:13px;color:#a89ec8;line-height:1.4;"></span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button id="gc-confirm-btn" class="share-modal-copy" style="flex:1;">Generate</button>
+      <button id="gc-cancel-btn" class="share-modal-close" style="width:auto;padding:9px 16px;">Back</button>
     </div>
   </div>
 </div>
@@ -1399,6 +1469,33 @@
     if (el) el.textContent = songCountLabel(n);
   }
 
+  let currentAlbumShareUrl = null;
+
+  function updateAlbumVisibilityBtn(visibility) {
+    const btn = document.getElementById('album-visibility-btn');
+    const label = document.getElementById('album-visibility-label');
+    const shareBtn = document.getElementById('album-share-display-btn');
+    if (visibility === 'PUBLIC') {
+      label.textContent = 'Public';
+      btn.style.background = '#0f2d1a';
+      btn.style.borderColor = '#1d5a2e';
+      btn.style.color = '#3dca72';
+    } else if (visibility === 'INVITE') {
+      label.textContent = 'Invite';
+      btn.style.background = '#2d1f0a';
+      btn.style.borderColor = '#78520a';
+      btn.style.color = '#f59e0b';
+      shareBtn.style.display = '';
+    } else {
+      label.textContent = 'Private';
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      shareBtn.style.display = 'none';
+      currentAlbumShareUrl = null;
+    }
+  }
+
   function renderAlbumDetail(albumId) {
     const album = ALBUMS_DATA[albumId];
     const songs = album?.songs || [];
@@ -1406,6 +1503,7 @@
     document.getElementById('album-detail-count').textContent = songCountLabel(songs.length);
     document.getElementById('detail-rename-btn').dataset.albumId = albumId;
     document.getElementById('detail-delete-btn').dataset.albumId = albumId;
+    updateAlbumVisibilityBtn(album.visibility || 'PRIVATE');
     const list = document.getElementById('album-detail-songs-list');
     if (!songs.length) {
       list.innerHTML = '<div class="empty-state" style="padding:24px 0;">No songs yet — add some below.</div>';
@@ -1440,6 +1538,7 @@
 
   function openAlbumDetail(albumId) {
     currentAlbumId = albumId;
+    currentAlbumShareUrl = ALBUMS_DATA[albumId]?.share_url || null;
     renderAlbumDetail(albumId);
     document.getElementById('albums-grid-view').style.display = 'none';
     document.getElementById('album-detail-view').style.display = 'block';
@@ -1449,6 +1548,37 @@
     document.getElementById('album-detail-view').style.display = 'none';
     document.getElementById('albums-grid-view').style.display = 'block';
     currentAlbumId = null;
+  });
+
+  document.getElementById('album-visibility-btn').addEventListener('click', async () => {
+    if (!currentAlbumId) return;
+    const current = ALBUMS_DATA[currentAlbumId]?.visibility || 'PRIVATE';
+    const next = VISIBILITY_CYCLE[current] || 'PRIVATE';
+    const resp = await fetch(`/api/albums/${currentAlbumId}/visibility/`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+      body: JSON.stringify({visibility: next}),
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      ALBUMS_DATA[currentAlbumId].visibility = next;
+      if (next === 'INVITE' && data.share_url) {
+        ALBUMS_DATA[currentAlbumId].share_url = data.share_url;
+        currentAlbumShareUrl = data.share_url;
+      }
+      if (next !== 'INVITE') {
+        ALBUMS_DATA[currentAlbumId].share_url = null;
+        currentAlbumShareUrl = null;
+      }
+      updateAlbumVisibilityBtn(next);
+      // Update card data-visibility
+      const card = document.getElementById(`album-card-${currentAlbumId}`);
+      if (card) card.dataset.visibility = next;
+    }
+  });
+
+  document.getElementById('album-share-display-btn').addEventListener('click', () => {
+    if (currentAlbumShareUrl) showShareModal(window.location.origin + currentAlbumShareUrl);
   });
 
   async function removeSongFromAlbum(albumId, songId) {
@@ -1503,13 +1633,15 @@
     if (!resp.ok) { errEl.textContent = data.error || 'Failed.'; errEl.style.display = 'block'; return; }
 
     if (albumModalMode === 'create') {
-      ALBUMS_DATA[data.album_id] = {title: data.title, songs: []};
+      ALBUMS_DATA[data.album_id] = {title: data.title, visibility: 'PRIVATE', share_url: null, songs: []};
       const card = document.createElement('div');
       card.className = 'album-big-card';
       card.id = `album-card-${data.album_id}`;
       card.dataset.albumId = data.album_id;
+      card.dataset.visibility = 'PRIVATE';
       card.innerHTML = `
         <div class="album-card-actions">
+          <button class="album-act-btn album-share-btn" data-album-id="${data.album_id}" title="Share">⤴</button>
           <button class="album-act-btn rename-album-btn" data-album-id="${data.album_id}" title="Rename">✎</button>
           <button class="album-act-btn del delete-album-btn" data-album-id="${data.album_id}" title="Delete">✕</button>
         </div>
@@ -1618,10 +1750,40 @@
   });
 
   // ── Wire album cards ──
+  async function shareAlbum(albumId) {
+    const album = ALBUMS_DATA[albumId];
+    if (!album) return;
+    if (album.visibility === 'INVITE' && album.share_url) {
+      showShareModal(window.location.origin + album.share_url);
+      return;
+    }
+    const resp = await fetch(`/api/albums/${albumId}/visibility/`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+      body: JSON.stringify({visibility: 'INVITE'}),
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      album.visibility = 'INVITE';
+      album.share_url = data.share_url;
+      const card = document.getElementById(`album-card-${albumId}`);
+      if (card) card.dataset.visibility = 'INVITE';
+      if (currentAlbumId === albumId) {
+        updateAlbumVisibilityBtn('INVITE');
+        currentAlbumShareUrl = data.share_url;
+      }
+      showShareModal(window.location.origin + data.share_url);
+    }
+  }
+
   function wireAlbumCard(card, albumId) {
     card.addEventListener('click', e => {
       if (e.target.tagName === 'BUTTON') return;
       openAlbumDetail(albumId);
+    });
+    card.querySelector('.album-share-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      shareAlbum(albumId);
     });
     card.querySelector('.rename-album-btn').addEventListener('click', e => {
       e.stopPropagation();
@@ -1654,12 +1816,51 @@
   const formError = document.getElementById('form-error');
   const generateBtn = document.getElementById('generate-btn');
 
-  generateForm.addEventListener('submit', async e => {
+  const OCCASION_LABELS = {
+    BIRTHDAY: 'Birthday', WEDDING: 'Wedding', GRADUATION: 'Graduation',
+    HOLIDAY: 'Holiday', OTHER: 'Other',
+  };
+  const GENRE_LABELS = {
+    POP: 'Pop', ROCK: 'Rock', JAZZ: 'Jazz',
+    CLASSICAL: 'Classical', HIP_HOP: 'Hip-Hop', OTHER: 'Other',
+  };
+
+  generateForm.addEventListener('submit', e => {
     e.preventDefault();
     formError.style.display = 'none';
 
     const title = document.getElementById('input-title').value.trim();
     if (!title) { formError.textContent = 'Please enter a song title.'; formError.style.display = 'block'; return; }
+
+    const occasion = document.getElementById('input-occasion').value;
+    const description = document.getElementById('input-description').value.trim();
+    const genre = genreInput.value;
+
+    document.getElementById('gc-title').textContent = title;
+    document.getElementById('gc-occasion').textContent = OCCASION_LABELS[occasion] || occasion;
+    document.getElementById('gc-genre').textContent = GENRE_LABELS[genre] || genre;
+    const descRow = document.getElementById('gc-desc-row');
+    const descEl = document.getElementById('gc-desc');
+    if (description) {
+      descEl.textContent = description;
+      descRow.style.display = 'flex';
+    } else {
+      descRow.style.display = 'none';
+    }
+    document.getElementById('gen-confirm-modal').style.display = 'flex';
+  });
+
+  document.getElementById('gc-cancel-btn').addEventListener('click', () => {
+    document.getElementById('gen-confirm-modal').style.display = 'none';
+  });
+
+  document.getElementById('gc-confirm-btn').addEventListener('click', async () => {
+    document.getElementById('gen-confirm-modal').style.display = 'none';
+
+    const title = document.getElementById('input-title').value.trim();
+    const occasion = document.getElementById('input-occasion').value;
+    const description = document.getElementById('input-description').value.trim();
+    const genre = genreInput.value;
 
     generateBtn.disabled = true;
     loadingBar.style.display = 'flex';
@@ -1671,12 +1872,7 @@
       const resp = await fetch('/api/songs/generate/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-        body: JSON.stringify({
-          title,
-          occasion: document.getElementById('input-occasion').value,
-          description: document.getElementById('input-description').value.trim(),
-          genre: genreInput.value,
-        }),
+        body: JSON.stringify({ title, occasion, description, genre }),
       });
       barFill.style.width = '80%'; barPct.textContent = 'Processing…';
       const result = await resp.json();

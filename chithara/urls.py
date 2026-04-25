@@ -12,4 +12,6 @@ urlpatterns = [
     path('logout/', music_views.logout_view, name='logout'),
     path('dashboard/', music_views.dashboard_view, name='dashboard'),
     path('share/<uuid:link_id>/', music_views.share_view, name='song-share'),
+    path('share/album/<uuid:link_id>/', music_views.album_share_view, name='album-share'),
+    path('albums/<uuid:album_id>/', music_views.public_album_view, name='public-album'),
 ]

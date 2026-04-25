@@ -65,10 +65,12 @@ def dashboard_view(request):
         return redirect('login')
     GENRE_ICONS = {'POP': '🎤', 'ROCK': '🎸', 'JAZZ': '🎷', 'CLASSICAL': '🎹', 'HIP_HOP': '🎧', 'OTHER': '🎵'}
     all_songs = Song.objects.filter(owner=user).order_by('-created_at')
-    albums = Album.objects.filter(owner=user).prefetch_related('songs')
+    albums = Album.objects.filter(owner=user).prefetch_related('songs', 'share_links')
     albums_data = {
         str(album.album_id): {
             'title': album.title,
+            'visibility': album.visibility,
+            'share_url': (album.share_links.all()[0].url if album.visibility == 'INVITE' and album.share_links.all() else None),
             'songs': [
                 {
                     'id': str(song.song_id),
@@ -87,6 +89,12 @@ def dashboard_view(request):
         .select_related('owner')
         .order_by('-created_at')[:60]
     )
+    discover_albums = (
+        Album.objects.filter(visibility='PUBLIC')
+        .select_related('owner')
+        .prefetch_related('songs')
+        .order_by('-created_at')[:40]
+    )
     saved_ids = set(
         SavedSong.objects.filter(user=user).values_list('song_id', flat=True)
     )
@@ -97,6 +105,7 @@ def dashboard_view(request):
         'albums': albums,
         'albums_data': albums_data,
         'discover_songs': discover_songs,
+        'discover_albums': discover_albums,
         'saved_ids': saved_ids,
     })
 
@@ -361,6 +370,87 @@ class SaveSongView(View):
             return JsonResponse({'error': 'You already own this song.'}, status=400)
         _, created = SavedSong.objects.get_or_create(user=user, song=song)
         return JsonResponse({'saved': True, 'already_saved': not created})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AlbumVisibilityView(View):
+    def post(self, request, album_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Not authenticated.'}, status=401)
+        try:
+            body = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        try:
+            album = Album.objects.get(album_id=album_id, owner__user_id=user_id)
+        except Album.DoesNotExist:
+            return JsonResponse({'error': 'Album not found.'}, status=404)
+        visibility = body.get('visibility', 'PRIVATE')
+        if visibility not in ('PUBLIC', 'PRIVATE', 'INVITE'):
+            return JsonResponse({'error': 'Invalid visibility.'}, status=400)
+        album.visibility = visibility
+        album.save()
+        response_data = {'visibility': album.visibility}
+        if visibility == 'INVITE':
+            share_link = album.share_links.first()
+            if not share_link:
+                link_id = uuid.uuid4()
+                share_link = ShareLink(link_id=link_id, url=f'/share/album/{link_id}/', album=album)
+                share_link.save()
+            response_data['share_url'] = share_link.url
+        return JsonResponse(response_data)
+
+
+def public_album_view(request, album_id):
+    try:
+        album = Album.objects.select_related('owner').get(album_id=album_id, visibility='PUBLIC')
+    except Album.DoesNotExist:
+        raise Http404
+    viewer = None
+    is_owner = False
+    user_id = request.session.get('user_id')
+    if user_id:
+        try:
+            viewer = User.objects.get(user_id=user_id)
+            is_owner = (str(album.owner_id) == str(viewer.user_id))
+        except User.DoesNotExist:
+            pass
+    songs = album.songs.filter(status='SUCCESS').select_related('owner').order_by('title')
+    return render(request, 'music/album_share.html', {
+        'album': album,
+        'songs': songs,
+        'viewer': viewer,
+        'is_owner': is_owner,
+    })
+
+
+def album_share_view(request, link_id):
+    try:
+        share_link = ShareLink.objects.select_related('album__owner').get(link_id=link_id)
+    except ShareLink.DoesNotExist:
+        raise Http404
+    album = share_link.album
+    if not album or album.visibility != 'INVITE':
+        raise Http404
+
+    viewer = None
+    is_owner = False
+    user_id = request.session.get('user_id')
+    if user_id:
+        try:
+            viewer = User.objects.get(user_id=user_id)
+            is_owner = (str(album.owner_id) == str(viewer.user_id))
+        except User.DoesNotExist:
+            pass
+
+    songs = album.songs.filter(status='SUCCESS').select_related('owner').order_by('title')
+    return render(request, 'music/album_share.html', {
+        'album': album,
+        'songs': songs,
+        'viewer': viewer,
+        'is_owner': is_owner,
+    })
 
 
 class SongDownloadView(View):

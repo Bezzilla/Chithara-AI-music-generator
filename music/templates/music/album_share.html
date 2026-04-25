@@ -1,0 +1,250 @@
+{% load music_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ album.title }} — Chithara</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a0a0f;
+      color: #e8e6f0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 16px;
+    }
+    .card {
+      background: #0e0e16;
+      border: 0.5px solid #2a2440;
+      border-radius: 20px;
+      padding: 32px;
+      width: 440px;
+      max-width: 100%;
+    }
+    .brand { font-family: 'Syne', sans-serif; font-size: 14px; color: #7c5cbf; margin-bottom: 24px; letter-spacing: -0.3px; }
+    .album-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .album-art {
+      width: 72px; height: 72px; border-radius: 12px;
+      background: linear-gradient(135deg, #2a1a4a 0%, #1a0a3a 50%, #0a0a20 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; flex-shrink: 0;
+    }
+    .album-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: #e8e0ff; }
+    .album-meta { font-size: 12px; color: #8880a0; margin-top: 4px; }
+    .invite-badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; background: #2d1f0a;
+      border: 0.5px solid #78520a; border-radius: 20px;
+      font-size: 11px; color: #f59e0b; margin-bottom: 20px;
+    }
+    .divider { height: 0.5px; background: #1e1e2e; margin: 20px 0; }
+    .section-label { font-size: 11px; color: #6860a0; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px; }
+    .song-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 10px;
+      cursor: pointer; transition: background 0.15s;
+      margin-bottom: 4px;
+    }
+    .song-row:hover { background: #14121f; }
+    .song-row.active { background: #1a1528; }
+    .track-num { font-size: 11px; color: #3a3860; width: 18px; text-align: center; flex-shrink: 0; }
+    .song-art {
+      width: 38px; height: 38px; border-radius: 6px;
+      background: linear-gradient(135deg, #2a1a4a, #1a0a3a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .song-info { flex: 1; min-width: 0; }
+    .song-name { font-size: 13.5px; font-weight: 500; color: #d8d0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .song-genre { font-size: 12px; color: #6860a0; margin-top: 2px; }
+    .now-playing-icon { font-size: 14px; color: #8b5cf6; width: 18px; text-align: center; flex-shrink: 0; }
+
+    .player-bar-wrap { padding: 8px 0; position: relative; cursor: pointer; margin-bottom: 4px; }
+    .player-bar-wrap::before {
+      content: ''; position: absolute;
+      left: 0; right: 0; top: 50%; height: 3px; margin-top: -1.5px;
+      background: #2a2440; border-radius: 2px; pointer-events: none;
+    }
+    .player-fill { height: 3px; width: 0%; background: #8b5cf6; border-radius: 2px; position: absolute; top: 50%; margin-top: -1.5px; pointer-events: none; }
+    .time-row { display: flex; justify-content: space-between; font-size: 11px; color: #6860a0; margin-bottom: 16px; }
+    .controls { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 24px; }
+    .play-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: #7c3aed; border: none; color: #f0e8ff;
+      cursor: pointer; font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .play-btn:hover { background: #6d30d4; }
+    .ctrl-btn { background: none; border: none; color: #8884a0; cursor: pointer; font-size: 18px; padding: 4px; }
+    .ctrl-btn:hover { color: #c8b8ff; }
+    .btn-download {
+      width: 100%;
+      background: #16141f; color: #c8b8ff;
+      border: 0.5px solid #2a2440; padding: 11px 16px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      text-decoration: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .btn-download:hover { background: #1e1a30; border-color: #3d3460; }
+    .login-hint { font-size: 11.5px; color: #6860a0; text-align: center; margin-top: 12px; }
+    .login-hint a { color: #8b5cf6; text-decoration: none; }
+    audio { display: none; }
+    .empty-note { color: #6860a0; font-size: 13px; text-align: center; padding: 20px 0; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">Chithara</div>
+
+  <div class="album-header">
+    <div class="album-art">🎵</div>
+    <div>
+      <div class="album-title">{{ album.title }}</div>
+      <div class="album-meta">by {{ album.owner.display_name }} · {{ songs|length }} song{{ songs|length|pluralize }}</div>
+    </div>
+  </div>
+  {% if album.visibility == 'INVITE' %}
+  <div class="invite-badge">Invite Only</div>
+  {% else %}
+  <div class="invite-badge" style="background:#0f2d1a;border-color:#1d5a2e;color:#3dca72;">Public</div>
+  {% endif %}
+
+  {% if songs %}
+  <!-- Player bar -->
+  <div class="player-bar-wrap" id="bar">
+    <div class="player-fill" id="fill"></div>
+  </div>
+  <div class="time-row">
+    <span id="cur">0:00</span>
+    <span id="tot">—</span>
+  </div>
+  <div class="controls">
+    <button class="ctrl-btn" id="prev-btn">⏮</button>
+    <button class="play-btn" id="play-btn">▶</button>
+    <button class="ctrl-btn" id="next-btn">⏭</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Songs</div>
+  <div id="song-list">
+    {% for song in songs %}
+    <div class="song-row" data-index="{{ forloop.counter0 }}" data-audio="{{ song.audio_url }}" data-title="{{ song.title }}" data-genre="{{ song.get_genre_display }}" data-icon="{{ song.genre|genre_icon }}">
+      <div class="track-num">{{ forloop.counter }}</div>
+      <div class="song-art">{{ song.genre|genre_icon }}</div>
+      <div class="song-info">
+        <div class="song-name">{{ song.title }}</div>
+        <div class="song-genre">{{ song.get_genre_display }}</div>
+      </div>
+      <div class="now-playing-icon" style="display:none;">♪</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="divider"></div>
+
+  {% if not is_owner %}
+  <a class="btn-download" id="dl-btn" href="#" download>⇩ Download current song</a>
+  {% endif %}
+
+  {% if not viewer %}
+  <div class="login-hint" style="margin-top:16px;">
+    <a href="/login/">Sign in</a> to save songs to your library.
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-note">This album has no songs yet.</div>
+  {% endif %}
+</div>
+
+<audio id="audio"></audio>
+
+<script>
+  const audio = document.getElementById('audio');
+  const playBtn = document.getElementById('play-btn');
+  const fill = document.getElementById('fill');
+  const cur = document.getElementById('cur');
+  const tot = document.getElementById('tot');
+  const rows = Array.from(document.querySelectorAll('.song-row'));
+  let currentIdx = -1;
+
+  const SEEK = 10;
+
+  function fmt(s) {
+    const t = Math.floor(s || 0);
+    return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+  }
+
+  function loadTrack(idx) {
+    if (idx < 0 || idx >= rows.length) return;
+    rows.forEach((r, i) => {
+      r.classList.toggle('active', i === idx);
+      r.querySelector('.now-playing-icon').style.display = i === idx ? '' : 'none';
+    });
+    const row = rows[idx];
+    currentIdx = idx;
+    audio.src = row.dataset.audio || '';
+    tot.textContent = '—';
+    cur.textContent = '0:00';
+    fill.style.width = '0%';
+    if (audio.src) {
+      audio.play().then(() => { playBtn.textContent = '⏸'; }).catch(() => { playBtn.textContent = '▶'; });
+    }
+    const dlBtn = document.getElementById('dl-btn');
+    if (dlBtn) dlBtn.href = audio.src;
+  }
+
+  rows.forEach((row, idx) => {
+    row.addEventListener('click', () => loadTrack(idx));
+  });
+
+  playBtn.addEventListener('click', () => {
+    if (!audio.src && rows.length) { loadTrack(0); return; }
+    if (!audio.src) return;
+    if (audio.paused) { audio.play(); playBtn.textContent = '⏸'; }
+    else              { audio.pause(); playBtn.textContent = '▶'; }
+  });
+
+  document.getElementById('prev-btn').addEventListener('click', () => {
+    if (!audio.src) return;
+    audio.currentTime = Math.max(0, audio.currentTime - SEEK);
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    if (!audio.src) return;
+    audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + SEEK);
+  });
+
+  audio.addEventListener('loadedmetadata', () => { tot.textContent = fmt(audio.duration); });
+
+  audio.addEventListener('timeupdate', () => {
+    if (!audio.duration) return;
+    fill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+    cur.textContent = fmt(audio.currentTime);
+  });
+
+  audio.addEventListener('ended', () => {
+    playBtn.textContent = '▶';
+    if (currentIdx < rows.length - 1) loadTrack(currentIdx + 1);
+  });
+
+  document.getElementById('bar').addEventListener('click', e => {
+    if (!audio.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+  });
+
+  // Auto-play first track on load
+  if (rows.length) loadTrack(0);
+</script>
+</body>
+</html>

@@ -13,4 +13,5 @@ urlpatterns = [
     path('albums/<uuid:album_id>/update/', views.AlbumUpdateView.as_view(), name='album-update'),
     path('albums/<uuid:album_id>/delete/', views.AlbumDeleteView.as_view(), name='album-delete'),
     path('albums/<uuid:album_id>/songs/', views.AlbumSongView.as_view(), name='album-songs'),
+    path('albums/<uuid:album_id>/visibility/', views.AlbumVisibilityView.as_view(), name='album-visibility'),
 ]
