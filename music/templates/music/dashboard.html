@@ -650,6 +650,15 @@
               {% endif %}
               <div class="song-dur">{{ song.duration|format_duration }}</div>
               <button class="action-btn play-song-btn" title="Play">▶</button>
+              <button class="action-btn edit-song-btn"
+                      data-song-id="{{ song.song_id }}"
+                      data-title="{{ song.title }}"
+                      title="Edit title">✎</button>
+              <button class="action-btn delete-song-btn"
+                      data-song-id="{{ song.song_id }}"
+                      data-title="{{ song.title }}"
+                      title="Delete song"
+                      style="color:#7c3060;">✕</button>
               {% if song.status == 'SUCCESS' %}
               <button class="action-btn share-btn {% if song.visibility == 'PUBLIC' %}pub-active{% elif song.visibility == 'INVITE' %}invite-active{% endif %}"
                       data-song-id="{{ song.song_id }}"
@@ -792,6 +801,39 @@
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- Edit song modal -->
+<div class="share-modal-overlay" id="edit-modal" style="display:none">
+  <div class="share-modal">
+    <div class="share-modal-title">Edit song title</div>
+    <div class="share-modal-sub">Change the title for this song.</div>
+    <input type="text" id="edit-modal-input" class="share-modal-input"
+           style="width:100%;margin-bottom:12px;" maxlength="255" />
+    <div style="display:flex;gap:8px;">
+      <button class="share-modal-copy" id="edit-modal-save" style="flex:1;">Save</button>
+      <button class="share-modal-close" id="edit-modal-cancel" style="width:auto;padding:9px 16px;">Cancel</button>
+    </div>
+    <div id="edit-modal-error" style="display:none;color:#f07090;font-size:12px;margin-top:8px;"></div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="share-modal-overlay" id="delete-modal" style="display:none">
+  <div class="share-modal">
+    <div class="share-modal-title">Delete song</div>
+    <div class="share-modal-sub">
+      Delete <strong id="delete-modal-name" style="color:#d8d0f0;"></strong>?
+      This cannot be undone.
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button id="delete-modal-confirm"
+              style="flex:1;background:#7c3060;color:#f0e8ff;border:none;padding:10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">
+        Delete
+      </button>
+      <button class="share-modal-close" id="delete-modal-cancel" style="width:auto;padding:10px 16px;">Cancel</button>
     </div>
   </div>
 </div>
@@ -1026,6 +1068,113 @@
       e.stopPropagation();
       showShareModal(btn.dataset.shareUrl);
     });
+  });
+
+  // ── Edit song modal ──
+  let editTargetSongId = null;
+
+  function openEditModal(songId, currentTitle) {
+    editTargetSongId = songId;
+    const input = document.getElementById('edit-modal-input');
+    input.value = currentTitle;
+    document.getElementById('edit-modal-error').style.display = 'none';
+    document.getElementById('edit-modal').style.display = 'flex';
+    setTimeout(() => { input.focus(); input.select(); }, 50);
+  }
+
+  document.getElementById('edit-modal-cancel').addEventListener('click', () => {
+    document.getElementById('edit-modal').style.display = 'none';
+  });
+
+  document.getElementById('edit-modal-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('edit-modal-save').click();
+    if (e.key === 'Escape') document.getElementById('edit-modal-cancel').click();
+  });
+
+  document.getElementById('edit-modal-save').addEventListener('click', async () => {
+    const title = document.getElementById('edit-modal-input').value.trim();
+    const errEl = document.getElementById('edit-modal-error');
+    if (!title) { errEl.textContent = 'Title cannot be empty.'; errEl.style.display = 'block'; return; }
+    const btn = document.getElementById('edit-modal-save');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const resp = await fetch(`/api/songs/${editTargetSongId}/update/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ title }),
+    });
+    const data = await resp.json();
+    btn.disabled = false; btn.textContent = 'Save';
+    if (resp.ok) {
+      // Update every row and edit button that has this song id
+      document.querySelectorAll(`.song-row[data-song-id="${editTargetSongId}"], .discover-row[data-song-id="${editTargetSongId}"]`).forEach(row => {
+        row.querySelector('.song-title').textContent = data.title;
+        row.dataset.title = data.title;
+      });
+      document.querySelectorAll(`.edit-song-btn[data-song-id="${editTargetSongId}"]`).forEach(b => {
+        b.dataset.title = data.title;
+      });
+      if (activeRow && activeRow.dataset.songId === editTargetSongId) {
+        document.getElementById('player-title').textContent = data.title;
+      }
+      document.getElementById('edit-modal').style.display = 'none';
+    } else {
+      errEl.textContent = data.error || 'Failed to save.';
+      errEl.style.display = 'block';
+    }
+  });
+
+  document.querySelectorAll('.edit-song-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      openEditModal(btn.dataset.songId, btn.dataset.title);
+    });
+  });
+
+  // ── Delete song modal ──
+  let deleteTargetSongId = null;
+
+  document.getElementById('delete-modal-cancel').addEventListener('click', () => {
+    document.getElementById('delete-modal').style.display = 'none';
+  });
+
+  document.querySelectorAll('.delete-song-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      deleteTargetSongId = btn.dataset.songId;
+      document.getElementById('delete-modal-name').textContent = btn.dataset.title;
+      document.getElementById('delete-modal').style.display = 'flex';
+    });
+  });
+
+  document.getElementById('delete-modal-confirm').addEventListener('click', async () => {
+    const confirmBtn = document.getElementById('delete-modal-confirm');
+    confirmBtn.disabled = true; confirmBtn.textContent = 'Deleting…';
+    const resp = await fetch(`/api/songs/${deleteTargetSongId}/delete/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    });
+    confirmBtn.disabled = false; confirmBtn.textContent = 'Delete';
+    if (resp.ok) {
+      // Remove all rows with this song id from the DOM
+      document.querySelectorAll(`[data-song-id="${deleteTargetSongId}"]`).forEach(el => {
+        const row = el.closest('.song-row, .discover-row');
+        if (row) row.remove();
+        else el.remove();
+      });
+      // Reset player if the deleted song was playing
+      if (activeRow && activeRow.dataset.songId === deleteTargetSongId) {
+        audioEl.pause(); audioEl.src = '';
+        playBtn.textContent = '▶';
+        document.getElementById('player-title').textContent = 'No song selected';
+        document.getElementById('player-genre').textContent = 'Select a song to play';
+        document.getElementById('player-icon').textContent = '♪';
+        progressFill.style.width = '0%';
+        activeRow = null;
+        updateVisibilityBtn('PRIVATE');
+        playerActionsEl.style.display = 'none';
+      }
+      document.getElementById('delete-modal').style.display = 'none';
+    }
   });
 
   // ── Discover: play rows ──

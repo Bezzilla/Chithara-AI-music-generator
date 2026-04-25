@@ -204,6 +204,42 @@ def share_view(request, link_id):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
+class SongDeleteView(View):
+    def post(self, request, song_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Not authenticated.'}, status=401)
+        try:
+            song = Song.objects.get(song_id=song_id, owner__user_id=user_id)
+        except Song.DoesNotExist:
+            return JsonResponse({'error': 'Song not found.'}, status=404)
+        song.delete()
+        return JsonResponse({'deleted': True})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class SongUpdateView(View):
+    def post(self, request, song_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Not authenticated.'}, status=401)
+        try:
+            body = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        try:
+            song = Song.objects.get(song_id=song_id, owner__user_id=user_id)
+        except Song.DoesNotExist:
+            return JsonResponse({'error': 'Song not found.'}, status=404)
+        title = body.get('title', '').strip()
+        if not title:
+            return JsonResponse({'error': 'Title cannot be empty.'}, status=400)
+        song.title = title
+        song.save()
+        return JsonResponse({'title': song.title})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
 class SaveSongView(View):
     def post(self, request, song_id):
         user_id = request.session.get('user_id')
