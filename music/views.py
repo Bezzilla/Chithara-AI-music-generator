@@ -44,11 +44,14 @@ def dashboard_view(request):
     except User.DoesNotExist:
         request.session.flush()
         return redirect('login')
-    songs = Song.objects.filter(owner=user).order_by('-created_at')[:10]
-    albums = Album.objects.filter(owner=user)[:5]
+    all_songs = Song.objects.filter(owner=user).order_by('-created_at')
+    public_songs = Song.objects.filter(owner=user, visibility='PUBLIC').order_by('-created_at')
+    albums = Album.objects.filter(owner=user).prefetch_related('songs')
     return render(request, 'music/dashboard.html', {
         'user': user,
-        'songs': songs,
+        'songs': all_songs[:10],
+        'all_songs': all_songs,
+        'public_songs': public_songs,
         'albums': albums,
     })
 
@@ -111,6 +114,28 @@ class GenerateSongView(View):
             'audio_url': song.audio_url,
             'duration': song.duration,
         }, status=201)
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class SongVisibilityView(View):
+    def post(self, request, song_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'error': 'Not authenticated.'}, status=401)
+        try:
+            body = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        try:
+            song = Song.objects.get(song_id=song_id, owner__user_id=user_id)
+        except Song.DoesNotExist:
+            return JsonResponse({'error': 'Song not found.'}, status=404)
+        visibility = body.get('visibility', 'PRIVATE')
+        if visibility not in ('PUBLIC', 'PRIVATE'):
+            return JsonResponse({'error': 'Invalid visibility.'}, status=400)
+        song.visibility = visibility
+        song.save()
+        return JsonResponse({'visibility': song.visibility})
 
 
 class SongDownloadView(View):

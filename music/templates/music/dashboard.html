@@ -4,11 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chithara – Generate</title>
+  <title>Chithara</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     html, body { height: 100%; }
 
     .app {
@@ -40,7 +39,6 @@
       border-bottom: 0.5px solid #1e1e2e;
     }
     .logo span { color: #7c5cbf; }
-
     .nav { padding: 16px 0; flex: 1; }
     .nav-item {
       display: flex;
@@ -57,7 +55,6 @@
     .nav-item.active { color: #c8b8ff; background: #1a1528; border-left-color: #8b5cf6; }
     .nav-item:hover:not(.active) { color: #c8b8ff; background: #14121f; }
     .nav-icon { font-size: 15px; width: 18px; text-align: center; }
-
     .sidebar-footer { padding: 0 16px 0; }
     .user-chip {
       padding: 10px 12px;
@@ -94,7 +91,6 @@
 
     /* ── Main ── */
     .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
     .topbar {
       padding: 20px 28px 16px;
       border-bottom: 0.5px solid #1e1e2e;
@@ -129,10 +125,6 @@
     .center-panel::-webkit-scrollbar-track { background: #0a0a0f; }
     .center-panel::-webkit-scrollbar-thumb { background: #2a2440; border-radius: 3px; }
     .center-panel::-webkit-scrollbar-thumb:hover { background: #3d3460; }
-    .albums-section::-webkit-scrollbar { width: 6px; }
-    .albums-section::-webkit-scrollbar-track { background: #0e0e16; }
-    .albums-section::-webkit-scrollbar-thumb { background: #2a2440; border-radius: 3px; }
-    .albums-section::-webkit-scrollbar-thumb:hover { background: #3d3460; }
 
     .section-label {
       font-size: 11px;
@@ -159,19 +151,14 @@
       border-radius: 50%;
       background: #2a1a4a;
       display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      flex-shrink: 0;
+      font-size: 14px; flex-shrink: 0;
       animation: pulse 1.5s ease-in-out infinite;
     }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .loading-text { flex: 1; }
     .loading-label { font-size: 12.5px; color: #d0c8e8; font-weight: 500; margin-bottom: 6px; }
     .bar-track { height: 4px; background: #2a2440; border-radius: 2px; overflow: hidden; }
-    .bar-fill {
-      height: 100%; width: 0%;
-      background: #7c3aed; border-radius: 2px;
-      transition: width 0.4s ease;
-    }
+    .bar-fill { height: 100%; width: 0%; background: #7c3aed; border-radius: 2px; transition: width 0.4s ease; }
     .bar-pct { font-size: 11px; color: #8b5cf6; margin-top: 4px; }
 
     /* ── Generate form ── */
@@ -198,7 +185,6 @@
     .field textarea { resize: none; height: 64px; }
     .field input:focus, .field select:focus, .field textarea:focus { border-color: #7c3aed; }
     .field select option { background: #16141f; }
-
     .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
     .chip {
       padding: 5px 12px;
@@ -211,7 +197,6 @@
       transition: all 0.15s;
     }
     .chip.selected { background: #2a1a4a; border-color: #7c3aed; color: #c8b8ff; }
-
     .form-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
     .confirm-btn {
       background: #7c3aed; color: #f0e8ff;
@@ -223,7 +208,6 @@
     .confirm-btn:hover { background: #6d30d4; }
     .confirm-btn:disabled { background: #3a2a5a; color: #6860a0; cursor: not-allowed; }
     .hint { font-size: 12px; color: #6860a0; }
-
     .form-error {
       background: #2d1020; border: 0.5px solid #7c3060;
       border-radius: 8px; padding: 10px 14px;
@@ -231,7 +215,7 @@
       margin-bottom: 12px; display: none;
     }
 
-    /* ── Songs list ── */
+    /* ── Song rows ── */
     .songs-grid { display: flex; flex-direction: column; gap: 8px; }
     .song-row {
       background: #0e0e16;
@@ -266,9 +250,66 @@
       background: none; border: none;
       color: #6860a0; cursor: pointer;
       font-size: 14px; padding: 4px; border-radius: 4px;
+      text-decoration: none;
     }
     .action-btn:hover { color: #c8b8ff; }
-    .empty-state { color: #6860a0; font-size: 13px; padding: 20px 0; text-align: center; }
+    .action-btn.pub-active { color: #3dcaa5; }
+    .empty-state { color: #6860a0; font-size: 13px; padding: 32px 0; text-align: center; }
+
+    /* ── Albums grid ── */
+    .albums-big-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px;
+    }
+    .album-big-card {
+      background: #0e0e16;
+      border: 0.5px solid #1e1e2e;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .album-big-card:hover { border-color: #2a2440; background: #12101a; }
+    .album-big-art {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2a1a4a 0%, #1a0a3a 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+    .album-big-name { font-size: 13px; font-weight: 500; color: #d0c8e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .album-big-count { font-size: 11.5px; color: #6860a0; margin-top: 3px; }
+    .create-album-card {
+      background: #0e0e16;
+      border: 0.5px dashed #2a2440;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+      transition: border-color 0.15s;
+      min-height: 140px;
+    }
+    .create-album-card:hover { border-color: #7c3aed; }
+    .create-album-card span:first-child { font-size: 24px; color: #3a3870; }
+    .create-album-card span:last-child { font-size: 12px; color: #50508a; }
+
+    /* ── Shared section ── */
+    .shared-banner {
+      background: #0e0e16;
+      border: 0.5px solid #2a2440;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      font-size: 12.5px;
+      color: #8884a0;
+      line-height: 1.5;
+    }
+    .shared-banner strong { color: #c8b8ff; }
 
     /* ── Right panel ── */
     .right-panel {
@@ -295,11 +336,7 @@
     }
     .player-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: #e8e0ff; margin-bottom: 2px; }
     .player-genre { font-size: 12px; color: #8880a0; margin-bottom: 16px; }
-
-    .progress-bar {
-      height: 3px; background: #2a2440; border-radius: 2px;
-      margin-bottom: 6px; cursor: pointer; position: relative;
-    }
+    .progress-bar { height: 3px; background: #2a2440; border-radius: 2px; margin-bottom: 6px; cursor: pointer; position: relative; }
     .progress-fill {
       height: 100%; width: 0%; background: #8b5cf6; border-radius: 2px;
       position: relative; transition: width 0.25s linear;
@@ -310,7 +347,6 @@
       width: 8px; height: 8px; border-radius: 50%; background: #c4a8ff;
     }
     .time-row { display: flex; justify-content: space-between; font-size: 11px; color: #6860a0; margin-bottom: 14px; }
-
     .controls { display: flex; align-items: center; justify-content: center; gap: 16px; }
     .ctrl-btn { background: none; border: none; color: #9890b8; cursor: pointer; font-size: 16px; padding: 4px; }
     .ctrl-btn:hover { color: #c8b8ff; }
@@ -322,8 +358,34 @@
       display: flex; align-items: center; justify-content: center;
     }
     .play-btn:hover { background: #6d30d4; }
+    .player-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .player-action-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #16141f;
+      border: 0.5px solid #2a2440;
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: #9890b8;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .player-action-btn:hover { background: #1e1a30; color: #c8b8ff; border-color: #3d3460; }
+    .player-action-btn.pub-active { color: #3dcaa5; border-color: #1d5a46; background: #0f2d28; }
 
     .albums-section { padding: 16px 20px; flex: 1; overflow-y: auto; }
+    .albums-section::-webkit-scrollbar { width: 6px; }
+    .albums-section::-webkit-scrollbar-track { background: #0e0e16; }
+    .albums-section::-webkit-scrollbar-thumb { background: #2a2440; border-radius: 3px; }
     .album-card {
       background: #0e0e16; border: 0.5px solid #1e1e2e;
       border-radius: 10px; padding: 12px;
@@ -348,16 +410,16 @@
   <div class="sidebar">
     <div class="logo">Chith<span>ara</span></div>
     <nav class="nav">
-      <div class="nav-item active" data-section="generate">
+      <div class="nav-item active" data-section="generate" data-title="Generate a song">
         <span class="nav-icon">✦</span> Generate
       </div>
-      <div class="nav-item" data-section="library">
+      <div class="nav-item" data-section="library" data-title="Library">
         <span class="nav-icon">♪</span> Library
       </div>
-      <div class="nav-item" data-section="albums">
+      <div class="nav-item" data-section="albums" data-title="Albums">
         <span class="nav-icon">♫</span> Albums
       </div>
-      <div class="nav-item" data-section="shared">
+      <div class="nav-item" data-section="shared" data-title="Shared">
         <span class="nav-icon">⊕</span> Shared
       </div>
     </nav>
@@ -373,7 +435,7 @@
     </div>
   </div>
 
-  <!-- Main content -->
+  <!-- Main -->
   <div class="main">
     <div class="topbar">
       <div class="page-title" id="page-title">Generate a song</div>
@@ -383,7 +445,7 @@
     <div class="content">
       <div class="center-panel">
 
-        <!-- Loading indicator (hidden until generation starts) -->
+        <!-- Loading indicator -->
         <div class="loading-bar-wrap" id="loading-bar" style="display:none">
           <div class="pulse-icon">✦</div>
           <div class="loading-text">
@@ -393,8 +455,8 @@
           </div>
         </div>
 
-        <!-- Generate form -->
-        <div id="section-generate">
+        <!-- ── GENERATE ── -->
+        <div id="section-generate" class="page-section">
           <div class="section-label" style="margin-bottom:10px;">Song parameters</div>
           <div class="gen-form">
             <div class="form-error" id="form-error"></div>
@@ -438,46 +500,142 @@
               </div>
             </form>
           </div>
+
+          <div class="section-label">Recent songs</div>
+          <div class="songs-grid" id="songs-grid">
+            {% for song in songs %}
+            <div class="song-row"
+                 data-song-id="{{ song.song_id }}"
+                 data-audio="{{ song.audio_url|default:'' }}"
+                 data-title="{{ song.title }}"
+                 data-genre="{{ song.get_genre_display }}"
+                 data-icon="{{ song.genre|genre_icon }}"
+                 data-status="{{ song.status }}"
+                 data-visibility="{{ song.visibility }}">
+              <div class="song-num">{{ forloop.counter }}</div>
+              <div class="song-art {{ song.genre|genre_art_class }}">{{ song.genre|genre_icon }}</div>
+              <div class="song-meta">
+                <div class="song-title">{{ song.title }}</div>
+                <div class="song-sub">{{ song.get_genre_display }} · {{ song.get_occasion_display }}</div>
+              </div>
+              {% if song.status == 'PENDING' %}
+                <span class="badge badge-pending">Generating…</span>
+              {% elif song.status == 'FAILED' %}
+                <span class="badge badge-failed">Failed</span>
+              {% elif song.visibility == 'PUBLIC' %}
+                <span class="badge badge-pub">Public</span>
+              {% else %}
+                <span class="badge badge-priv">Private</span>
+              {% endif %}
+              <div class="song-dur">{{ song.duration|format_duration }}</div>
+              <button class="action-btn play-song-btn" title="Play">▶</button>
+              <a class="action-btn" href="/api/songs/{{ song.song_id }}/download/" title="Download" download>⇩</a>
+            </div>
+            {% empty %}
+            <div class="empty-state">No songs yet — generate your first song above!</div>
+            {% endfor %}
+          </div>
         </div>
 
-        <!-- Recent songs -->
-        <div class="section-label">Recent songs</div>
-        <div class="songs-grid" id="songs-grid">
-          {% for song in songs %}
-          <div class="song-row"
-               data-song-id="{{ song.song_id }}"
-               data-audio="{{ song.audio_url|default:'' }}"
-               data-title="{{ song.title }}"
-               data-genre="{{ song.get_genre_display }}"
-               data-icon="{{ song.genre|genre_icon }}"
-               data-status="{{ song.status }}">
-            <div class="song-num">{{ forloop.counter }}</div>
-            <div class="song-art {{ song.genre|genre_art_class }}">{{ song.genre|genre_icon }}</div>
-            <div class="song-meta">
-              <div class="song-title">{{ song.title }}</div>
-              <div class="song-sub">{{ song.get_genre_display }} · {{ song.get_occasion_display }}</div>
+        <!-- ── LIBRARY ── -->
+        <div id="section-library" class="page-section" style="display:none">
+          <div class="section-label">All songs ({{ all_songs.count }})</div>
+          <div class="songs-grid">
+            {% for song in all_songs %}
+            <div class="song-row"
+                 data-song-id="{{ song.song_id }}"
+                 data-audio="{{ song.audio_url|default:'' }}"
+                 data-title="{{ song.title }}"
+                 data-genre="{{ song.get_genre_display }}"
+                 data-icon="{{ song.genre|genre_icon }}"
+                 data-status="{{ song.status }}"
+                 data-visibility="{{ song.visibility }}">
+              <div class="song-num">{{ forloop.counter }}</div>
+              <div class="song-art {{ song.genre|genre_art_class }}">{{ song.genre|genre_icon }}</div>
+              <div class="song-meta">
+                <div class="song-title">{{ song.title }}</div>
+                <div class="song-sub">{{ song.get_genre_display }} · {{ song.get_occasion_display }}</div>
+              </div>
+              {% if song.status == 'PENDING' %}
+                <span class="badge badge-pending">Generating…</span>
+              {% elif song.status == 'FAILED' %}
+                <span class="badge badge-failed">Failed</span>
+              {% elif song.visibility == 'PUBLIC' %}
+                <span class="badge badge-pub">Public</span>
+              {% else %}
+                <span class="badge badge-priv">Private</span>
+              {% endif %}
+              <div class="song-dur">{{ song.duration|format_duration }}</div>
+              <button class="action-btn play-song-btn" title="Play">▶</button>
+              {% if song.status == 'SUCCESS' %}
+              <button class="action-btn share-btn {% if song.visibility == 'PUBLIC' %}pub-active{% endif %}"
+                      data-song-id="{{ song.song_id }}"
+                      data-visibility="{{ song.visibility }}"
+                      title="{% if song.visibility == 'PUBLIC' %}Make private{% else %}Make public{% endif %}">⊕</button>
+              {% endif %}
+              <a class="action-btn" href="/api/songs/{{ song.song_id }}/download/" title="Download" download>⇩</a>
             </div>
-            {% if song.status == 'PENDING' %}
-              <span class="badge badge-pending">Generating…</span>
-            {% elif song.status == 'FAILED' %}
-              <span class="badge badge-failed">Failed</span>
-            {% elif song.visibility == 'PUBLIC' %}
-              <span class="badge badge-pub">Public</span>
-            {% else %}
-              <span class="badge badge-priv">Private</span>
-            {% endif %}
-            <div class="song-dur">{{ song.duration|format_duration }}</div>
-            <button class="action-btn play-song-btn" title="Play">▶</button>
-            <a class="action-btn" href="/api/songs/{{ song.song_id }}/download/" title="Download" download>⇩</a>
+            {% empty %}
+            <div class="empty-state">No songs yet — head to Generate to create your first song.</div>
+            {% endfor %}
           </div>
-          {% empty %}
-          <div class="empty-state">No songs yet — generate your first song above!</div>
-          {% endfor %}
+        </div>
+
+        <!-- ── ALBUMS ── -->
+        <div id="section-albums" class="page-section" style="display:none">
+          <div class="section-label">My albums ({{ albums.count }})</div>
+          <div class="albums-big-grid">
+            {% for album in albums %}
+            <div class="album-big-card">
+              <div class="album-big-art">🎵</div>
+              <div class="album-big-name">{{ album.title }}</div>
+              <div class="album-big-count">{{ album.songs.count }} song{{ album.songs.count|pluralize }}</div>
+            </div>
+            {% endfor %}
+            <div class="create-album-card">
+              <span>＋</span>
+              <span>New album</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SHARED ── -->
+        <div id="section-shared" class="page-section" style="display:none">
+          <div class="shared-banner">
+            Songs marked <strong>Public</strong> appear here and are visible to anyone with the link.
+            Use the <strong>⊕</strong> button in Library to toggle a song public or private.
+          </div>
+          <div class="section-label">Public songs ({{ public_songs.count }})</div>
+          <div class="songs-grid">
+            {% for song in public_songs %}
+            <div class="song-row"
+                 data-song-id="{{ song.song_id }}"
+                 data-audio="{{ song.audio_url|default:'' }}"
+                 data-title="{{ song.title }}"
+                 data-genre="{{ song.get_genre_display }}"
+                 data-icon="{{ song.genre|genre_icon }}"
+                 data-status="{{ song.status }}"
+                 data-visibility="{{ song.visibility }}">
+              <div class="song-num">{{ forloop.counter }}</div>
+              <div class="song-art {{ song.genre|genre_art_class }}">{{ song.genre|genre_icon }}</div>
+              <div class="song-meta">
+                <div class="song-title">{{ song.title }}</div>
+                <div class="song-sub">{{ song.get_genre_display }} · {{ song.get_occasion_display }}</div>
+              </div>
+              <span class="badge badge-pub">Public</span>
+              <div class="song-dur">{{ song.duration|format_duration }}</div>
+              <button class="action-btn play-song-btn" title="Play">▶</button>
+              <a class="action-btn" href="/api/songs/{{ song.song_id }}/download/" title="Download" download>⇩</a>
+            </div>
+            {% empty %}
+            <div class="empty-state">No public songs yet. Use ⊕ in Library to share a song.</div>
+            {% endfor %}
+          </div>
         </div>
 
       </div>
 
-      <!-- Right panel: player + albums -->
+      <!-- Right panel -->
       <div class="right-panel">
         <div class="player">
           <div class="now-playing-label">Now playing</div>
@@ -505,6 +663,15 @@
             <button class="ctrl-btn" id="next-btn" title="Next">⏭</button>
             <button class="ctrl-btn" id="download-btn" title="Download">⇩</button>
           </div>
+
+          <div class="player-actions">
+            <button class="player-action-btn" id="player-visibility-btn" title="Toggle public/private">
+              <span class="player-action-label" id="player-visibility-label">Private</span>
+            </button>
+            <button class="player-action-btn" id="player-share-btn" title="Share">
+              <span class="player-action-label">Share</span>
+            </button>
+          </div>
         </div>
 
         <div class="albums-section">
@@ -528,7 +695,9 @@
 </div>
 
 <script>
-  // ── Genre chip selection ──
+  const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  // ── Genre chips ──
   const chips = document.querySelectorAll('.chip[data-value]');
   const genreInput = document.getElementById('genre-input');
   chips.forEach(c => c.addEventListener('click', () => {
@@ -537,64 +706,89 @@
     genreInput.value = c.dataset.value;
   }));
 
-
-  // ── Nav items ──
+  // ── Section switching ──
   const navItems = document.querySelectorAll('.nav-item');
+  const sections = document.querySelectorAll('.page-section');
   navItems.forEach(n => n.addEventListener('click', () => {
     navItems.forEach(x => x.classList.remove('active'));
     n.classList.add('active');
-    document.getElementById('page-title').textContent =
-      n.dataset.section.charAt(0).toUpperCase() + n.dataset.section.slice(1);
+    document.getElementById('page-title').textContent = n.dataset.title;
+    sections.forEach(s => s.style.display = 'none');
+    document.getElementById('section-' + n.dataset.section).style.display = 'block';
   }));
 
-  // ── Audio player state ──
+  // ── Audio player ──
   const audioEl = document.getElementById('audio-player');
   const playBtn = document.getElementById('play-btn');
   const loopBtn = document.getElementById('loop-btn');
   const progressFill = document.getElementById('progress-fill');
   const currentTimeEl = document.getElementById('current-time');
   let isLooping = false;
-  let currentSongRows = [];
 
   function formatTime(s) {
     const t = Math.floor(s);
     return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
   }
 
+  const visibilityBtn = document.getElementById('player-visibility-btn');
+  const visibilityLabel = document.getElementById('player-visibility-label');
+  let activeRow = null;
+
+  function updateVisibilityBtn(visibility) {
+    const isPub = visibility === 'PUBLIC';
+    visibilityBtn.classList.toggle('pub-active', isPub);
+    visibilityLabel.textContent = isPub ? 'Public' : 'Private';
+    visibilityBtn.title = isPub ? 'Make private' : 'Make public';
+  }
+
+  activeRow = document.querySelector('.song-row') || null;
+  if (activeRow) updateVisibilityBtn(activeRow.dataset.visibility || 'PRIVATE');
+
   function loadSong(row) {
     document.querySelectorAll('.song-row').forEach(r => r.classList.remove('active'));
     row.classList.add('active');
+    activeRow = row;
     document.getElementById('player-title').textContent = row.dataset.title;
     document.getElementById('player-genre').textContent =
       row.dataset.genre + ' · by {{ user.display_name }}';
     document.getElementById('player-icon').textContent = row.dataset.icon;
+    updateVisibilityBtn(row.dataset.visibility || 'PRIVATE');
 
-    const audio = row.dataset.audio;
     const status = row.dataset.status;
-
     if (status === 'PENDING') {
       document.getElementById('player-genre').textContent = 'Still generating… refresh in a moment';
-      playBtn.textContent = '▶';
-      return;
+      playBtn.textContent = '▶'; return;
     }
     if (status === 'FAILED') {
       document.getElementById('player-genre').textContent = 'Generation failed';
-      playBtn.textContent = '▶';
-      return;
+      playBtn.textContent = '▶'; return;
     }
-    if (audio) {
-      audioEl.src = audio;
-      audioEl.play().then(() => {
-        playBtn.textContent = '⏸';
-      }).catch(() => {
-        playBtn.textContent = '▶';
-      });
-    } else {
-      playBtn.textContent = '▶';
+    if (row.dataset.audio) {
+      audioEl.src = row.dataset.audio;
+      audioEl.play().then(() => { playBtn.textContent = '⏸'; }).catch(() => { playBtn.textContent = '▶'; });
     }
   }
 
-  // Song row click
+  visibilityBtn.addEventListener('click', async () => {
+    if (!activeRow || activeRow.dataset.status !== 'SUCCESS') return;
+    const current = activeRow.dataset.visibility || 'PRIVATE';
+    const next = current === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
+    const resp = await fetch(`/api/songs/${activeRow.dataset.songId}/visibility/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ visibility: next }),
+    });
+    if (resp.ok) {
+      activeRow.dataset.visibility = next;
+      updateVisibilityBtn(next);
+      const badge = activeRow.querySelector('.badge');
+      if (badge && !badge.classList.contains('badge-pending') && !badge.classList.contains('badge-failed')) {
+        badge.className = 'badge ' + (next === 'PUBLIC' ? 'badge-pub' : 'badge-priv');
+        badge.textContent = next === 'PUBLIC' ? 'Public' : 'Private';
+      }
+    }
+  });
+
   document.querySelectorAll('.song-row').forEach(r => {
     r.addEventListener('click', e => {
       if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
@@ -602,52 +796,65 @@
     });
   });
 
-  // Play buttons inside rows
   document.querySelectorAll('.play-song-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      loadSong(btn.closest('.song-row'));
-    });
+    btn.addEventListener('click', e => { e.stopPropagation(); loadSong(btn.closest('.song-row')); });
   });
 
-  // Play/pause
   playBtn.addEventListener('click', () => {
     if (!audioEl.src) return;
     if (audioEl.paused) { audioEl.play(); playBtn.textContent = '⏸'; }
     else { audioEl.pause(); playBtn.textContent = '▶'; }
   });
 
-  // Loop
   loopBtn.addEventListener('click', () => {
     isLooping = !isLooping;
     audioEl.loop = isLooping;
     loopBtn.classList.toggle('active', isLooping);
   });
 
-  // Download current song
   document.getElementById('download-btn').addEventListener('click', () => {
     const active = document.querySelector('.song-row.active');
-    if (active) {
-      const id = active.dataset.songId;
-      window.location.href = `/api/songs/${id}/download/`;
-    }
+    if (active) window.location.href = `/api/songs/${active.dataset.songId}/download/`;
   });
 
-  // Progress bar update
   audioEl.addEventListener('timeupdate', () => {
     if (!audioEl.duration) return;
-    const pct = (audioEl.currentTime / audioEl.duration) * 100;
-    progressFill.style.width = pct + '%';
+    progressFill.style.width = (audioEl.currentTime / audioEl.duration * 100) + '%';
     currentTimeEl.textContent = formatTime(audioEl.currentTime);
   });
 
   audioEl.addEventListener('ended', () => { playBtn.textContent = '▶'; });
 
-  // Seek on progress bar click
   document.getElementById('progress-bar').addEventListener('click', e => {
     if (!audioEl.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     audioEl.currentTime = ((e.clientX - rect.left) / rect.width) * audioEl.duration;
+  });
+
+  // ── Visibility toggle (Library ⊕ buttons) ──
+  document.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const songId = btn.dataset.songId;
+      const current = btn.dataset.visibility;
+      const next = current === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
+      const resp = await fetch(`/api/songs/${songId}/visibility/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ visibility: next }),
+      });
+      if (resp.ok) {
+        btn.dataset.visibility = next;
+        btn.classList.toggle('pub-active', next === 'PUBLIC');
+        btn.title = next === 'PUBLIC' ? 'Make private' : 'Make public';
+        const row = btn.closest('.song-row');
+        const badge = row.querySelector('.badge');
+        if (badge) {
+          badge.className = 'badge ' + (next === 'PUBLIC' ? 'badge-pub' : 'badge-priv');
+          badge.textContent = next === 'PUBLIC' ? 'Public' : 'Private';
+        }
+      }
+    });
   });
 
   // ── Generate form ──
@@ -659,72 +866,56 @@
   const formError = document.getElementById('form-error');
   const generateBtn = document.getElementById('generate-btn');
 
-  function showError(msg) {
-    formError.textContent = msg;
-    formError.style.display = 'block';
-  }
-
-  function hideError() { formError.style.display = 'none'; }
-
-  function setProgress(pct, label) {
-    barFill.style.width = pct + '%';
-    barPct.textContent = label;
-  }
-
   generateForm.addEventListener('submit', async e => {
     e.preventDefault();
-    hideError();
+    formError.style.display = 'none';
 
     const title = document.getElementById('input-title').value.trim();
-    if (!title) { showError('Please enter a song title.'); return; }
+    if (!title) { formError.textContent = 'Please enter a song title.'; formError.style.display = 'block'; return; }
 
     generateBtn.disabled = true;
     loadingBar.style.display = 'flex';
     loadingLabel.textContent = `Generating "${title}"…`;
-    setProgress(10, 'Sending request…');
-
-    const body = {
-      title,
-      occasion: document.getElementById('input-occasion').value,
-      description: document.getElementById('input-description').value.trim(),
-      genre: genreInput.value,
-    };
+    barFill.style.width = '10%'; barPct.textContent = 'Sending request…';
 
     try {
-      setProgress(30, 'Contacting AI service…');
+      barFill.style.width = '30%'; barPct.textContent = 'Contacting AI service…';
       const resp = await fetch('/api/songs/generate/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': generateForm.querySelector('[name=csrfmiddlewaretoken]').value,
-        },
-        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({
+          title,
+          occasion: document.getElementById('input-occasion').value,
+          description: document.getElementById('input-description').value.trim(),
+          genre: genreInput.value,
+        }),
       });
-
-      setProgress(80, 'Processing response…');
+      barFill.style.width = '80%'; barPct.textContent = 'Processing…';
       const result = await resp.json();
-
       if (resp.ok) {
-        setProgress(100, 'Complete ✓');
+        barFill.style.width = '100%'; barPct.textContent = 'Complete ✓';
         setTimeout(() => location.reload(), 600);
       } else {
         loadingBar.style.display = 'none';
-        showError(result.error || 'Generation failed. Please try again.');
+        formError.textContent = result.error || 'Generation failed.';
+        formError.style.display = 'block';
       }
     } catch {
       loadingBar.style.display = 'none';
-      showError('Network error. Please check your connection.');
+      formError.textContent = 'Network error. Please check your connection.';
+      formError.style.display = 'block';
     } finally {
       generateBtn.disabled = false;
     }
   });
 
-  // New Song button scrolls to form
   document.getElementById('new-song-btn').addEventListener('click', () => {
-    document.getElementById('input-title').focus();
     navItems.forEach(x => x.classList.remove('active'));
     document.querySelector('[data-section="generate"]').classList.add('active');
+    sections.forEach(s => s.style.display = 'none');
+    document.getElementById('section-generate').style.display = 'block';
     document.getElementById('page-title').textContent = 'Generate a song';
+    document.getElementById('input-title').focus();
   });
 </script>
 </body>

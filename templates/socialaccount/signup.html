@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><title>Signing in…</title></head>
+<body>
+  <form id="f" method="post" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Continue</button>
+  </form>
+  {% if not form.errors %}
+  <script>document.getElementById('f').submit();</script>
+  {% endif %}
+</body>
+</html>
