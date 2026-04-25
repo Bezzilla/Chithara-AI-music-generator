@@ -623,7 +623,7 @@
           <div class="section-label" style="margin-bottom:10px;">Song parameters</div>
           <div class="gen-form">
             <div class="form-error" id="form-error"></div>
-            <form id="generate-form">
+            <form id="generate-form" onsubmit="return false">
               {% csrf_token %}
               <div class="form-row">
                 <div class="field">
@@ -658,11 +658,57 @@
                 <input type="hidden" name="genre" id="genre-input" value="CLASSICAL" />
               </div>
               <div class="form-bottom">
-                <div class="hint">You'll review your input before generating</div>
-                <button class="confirm-btn" type="submit" id="generate-btn">Preview &amp; Generate →</button>
+                <button class="confirm-btn" type="button" id="generate-btn">✦ Generate →</button>
               </div>
             </form>
           </div>
+<script>
+(function(){
+  var btn = document.getElementById('generate-btn');
+  var loadingBar = document.getElementById('loading-bar');
+  var barFill = document.getElementById('bar-fill');
+  var barPct = document.getElementById('bar-pct');
+  var loadingLabel = document.getElementById('loading-label');
+  var formError = document.getElementById('form-error');
+  btn.onclick = async function() {
+    formError.style.display = 'none';
+    var title = document.getElementById('input-title').value.trim();
+    if (!title) { formError.textContent = 'Please enter a song title.'; formError.style.display = 'block'; return; }
+    var csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var occasion = document.getElementById('input-occasion').value;
+    var description = document.getElementById('input-description').value.trim();
+    var genre = document.getElementById('genre-input').value;
+    btn.disabled = true;
+    loadingBar.style.display = 'flex';
+    loadingLabel.textContent = 'Generating "' + title + '"…';
+    barFill.style.width = '10%'; barPct.textContent = 'Sending request…';
+    try {
+      barFill.style.width = '30%'; barPct.textContent = 'Contacting AI service…';
+      var resp = await fetch('/api/songs/generate/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+        body: JSON.stringify({ title: title, occasion: occasion, description: description, genre: genre }),
+      });
+      barFill.style.width = '80%'; barPct.textContent = 'Processing…';
+      var result = await resp.json();
+      if (resp.ok) {
+        barFill.style.width = '100%'; barPct.textContent = 'Complete ✓';
+        setTimeout(function(){ location.reload(); }, 1500);
+      } else {
+        loadingBar.style.display = 'none';
+        formError.textContent = result.error || 'Generation failed.';
+        formError.style.display = 'block';
+        btn.disabled = false;
+      }
+    } catch(e) {
+      loadingBar.style.display = 'none';
+      formError.textContent = 'Network error: ' + e.message;
+      formError.style.display = 'block';
+      btn.disabled = false;
+    }
+  };
+})();
+</script>
 
           <div class="section-label">Recent songs</div>
           <div class="songs-grid" id="songs-grid">
@@ -941,36 +987,6 @@
 
       </div>
 
-    </div>
-  </div>
-</div>
-
-<!-- Generation confirmation modal -->
-<div class="share-modal-overlay" id="gen-confirm-modal" style="display:none">
-  <div class="share-modal">
-    <div class="share-modal-title">Confirm generation</div>
-    <div class="share-modal-sub">Review your song details before generating.</div>
-    <div style="background:#16141f;border:0.5px solid #2a2440;border-radius:10px;padding:14px 16px;margin:14px 0;display:flex;flex-direction:column;gap:10px;">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;">
-        <span style="font-size:11.5px;color:#6860a0;">Title</span>
-        <span id="gc-title" style="font-size:13.5px;font-weight:500;color:#d8d0f0;text-align:right;max-width:220px;word-break:break-word;"></span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline;">
-        <span style="font-size:11.5px;color:#6860a0;">Occasion</span>
-        <span id="gc-occasion" style="font-size:13.5px;color:#d8d0f0;"></span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline;">
-        <span style="font-size:11.5px;color:#6860a0;">Genre</span>
-        <span id="gc-genre" style="font-size:13.5px;color:#d8d0f0;"></span>
-      </div>
-      <div id="gc-desc-row" style="display:flex;flex-direction:column;gap:4px;">
-        <span style="font-size:11.5px;color:#6860a0;">Description</span>
-        <span id="gc-desc" style="font-size:13px;color:#a89ec8;line-height:1.4;"></span>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button id="gc-confirm-btn" class="share-modal-copy" style="flex:1;">Generate</button>
-      <button id="gc-cancel-btn" class="share-modal-close" style="width:auto;padding:9px 16px;">Back</button>
     </div>
   </div>
 </div>
@@ -1816,82 +1832,7 @@
   const formError = document.getElementById('form-error');
   const generateBtn = document.getElementById('generate-btn');
 
-  const OCCASION_LABELS = {
-    BIRTHDAY: 'Birthday', WEDDING: 'Wedding', GRADUATION: 'Graduation',
-    HOLIDAY: 'Holiday', OTHER: 'Other',
-  };
-  const GENRE_LABELS = {
-    POP: 'Pop', ROCK: 'Rock', JAZZ: 'Jazz',
-    CLASSICAL: 'Classical', HIP_HOP: 'Hip-Hop', OTHER: 'Other',
-  };
-
-  generateForm.addEventListener('submit', e => {
-    e.preventDefault();
-    formError.style.display = 'none';
-
-    const title = document.getElementById('input-title').value.trim();
-    if (!title) { formError.textContent = 'Please enter a song title.'; formError.style.display = 'block'; return; }
-
-    const occasion = document.getElementById('input-occasion').value;
-    const description = document.getElementById('input-description').value.trim();
-    const genre = genreInput.value;
-
-    document.getElementById('gc-title').textContent = title;
-    document.getElementById('gc-occasion').textContent = OCCASION_LABELS[occasion] || occasion;
-    document.getElementById('gc-genre').textContent = GENRE_LABELS[genre] || genre;
-    const descRow = document.getElementById('gc-desc-row');
-    const descEl = document.getElementById('gc-desc');
-    if (description) {
-      descEl.textContent = description;
-      descRow.style.display = 'flex';
-    } else {
-      descRow.style.display = 'none';
-    }
-    document.getElementById('gen-confirm-modal').style.display = 'flex';
-  });
-
-  document.getElementById('gc-cancel-btn').addEventListener('click', () => {
-    document.getElementById('gen-confirm-modal').style.display = 'none';
-  });
-
-  document.getElementById('gc-confirm-btn').addEventListener('click', async () => {
-    document.getElementById('gen-confirm-modal').style.display = 'none';
-
-    const title = document.getElementById('input-title').value.trim();
-    const occasion = document.getElementById('input-occasion').value;
-    const description = document.getElementById('input-description').value.trim();
-    const genre = genreInput.value;
-
-    generateBtn.disabled = true;
-    loadingBar.style.display = 'flex';
-    loadingLabel.textContent = `Generating "${title}"…`;
-    barFill.style.width = '10%'; barPct.textContent = 'Sending request…';
-
-    try {
-      barFill.style.width = '30%'; barPct.textContent = 'Contacting AI service…';
-      const resp = await fetch('/api/songs/generate/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-        body: JSON.stringify({ title, occasion, description, genre }),
-      });
-      barFill.style.width = '80%'; barPct.textContent = 'Processing…';
-      const result = await resp.json();
-      if (resp.ok) {
-        barFill.style.width = '100%'; barPct.textContent = 'Complete ✓';
-        setTimeout(() => location.reload(), 600);
-      } else {
-        loadingBar.style.display = 'none';
-        formError.textContent = result.error || 'Generation failed.';
-        formError.style.display = 'block';
-      }
-    } catch {
-      loadingBar.style.display = 'none';
-      formError.textContent = 'Network error. Please check your connection.';
-      formError.style.display = 'block';
-    } finally {
-      generateBtn.disabled = false;
-    }
-  });
+  // generate handler is in the inline script above the songs grid
 
   document.getElementById('player-share-btn').addEventListener('click', async () => {
     if (!activeRow || activeRow.dataset.status !== 'SUCCESS') return;
