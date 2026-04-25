@@ -5,6 +5,7 @@ from music import views as music_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),
     path('api/', include('music.urls')),
     path('', lambda request: redirect('login'), name='home'),
     path('login/', music_views.login_view, name='login'),

@@ -9,6 +9,7 @@ Chithara is a web-based AI music generator that allows users to create original 
 - **Backend:** Django 5.2 (Python)
 - **Database:** SQLite (development)
 - **AI Generation:** Suno API (via sunoapi.org)
+- **Authentication:** Google OAuth 2.0 (via django-allauth)
 
 ---
 
@@ -44,7 +45,24 @@ copy .env.example .env
 # macOS/Linux
 cp .env.example .env
 ```
-Edit `.env` and fill in the values (see **Strategy Configuration** below).
+Edit `.env` and fill in the values (see **Strategy Configuration** and **Google OAuth Setup** below).
+
+**4a. Google OAuth Setup**
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a project → **APIs & Services** → **Credentials**
+3. Click **Create Credentials** → **OAuth 2.0 Client ID**
+4. Application type: **Web application**
+5. Under **Authorized redirect URIs**, add:
+   ```
+   http://127.0.0.1:8000/accounts/google/login/callback/
+   ```
+6. Copy the **Client ID** and **Client Secret** into your `.env`:
+   ```
+   GOOGLE_CLIENT_ID=your-client-id-here
+   GOOGLE_CLIENT_SECRET=your-client-secret-here
+   ```
+7. After running the server, go to `http://127.0.0.1:8000/admin/` → **Sites** → change `example.com` to `127.0.0.1:8000`
 
 **5. Run migrations**
 ```bash
@@ -111,8 +129,7 @@ The API responds immediately with `PENDING` status while audio is generated in t
 
 ## Deviations from SRS
 
-### 1. Authentication — email placeholder instead of Google OAuth
-The SRS (FR-01, US-01) specifies Google OAuth. Google OAuth is out of scope for Exercise 4. The current implementation uses a simple email + display name login backed by Django sessions. The User model, session management, and logout are all in place and will be connected to Google OAuth in a future exercise.
+None. All SRS requirements are implemented.
 
 
 

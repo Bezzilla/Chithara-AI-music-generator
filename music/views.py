@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth import logout as auth_logout
 from .models import User, Song, Album
 from .services.generation_service import SongGenerationContext
 
@@ -30,7 +31,7 @@ def login_view(request):
 
 
 def logout_view(request):
-    request.session.flush()
+    auth_logout(request)
     return redirect('login')
 
 
