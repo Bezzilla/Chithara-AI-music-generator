@@ -111,21 +111,8 @@
   <div class="divider"></div>
 
   <div class="actions">
-    {% if is_owner %}
-      <button class="btn-save saved" disabled>Your song</button>
-    {% elif is_saved %}
-      <button class="btn-save saved" id="save-btn" disabled>Saved</button>
-    {% elif viewer %}
-      <button class="btn-save" id="save-btn" data-song-id="{{ song.song_id }}">Add to library</button>
-    {% else %}
-      <a href="/login/?next={{ request.path }}" class="btn-download" style="background:#7c3aed;border:none;color:#f0e8ff;">Add to library</a>
-    {% endif %}
     <a class="btn-download" href="/api/songs/{{ song.song_id }}/download/" download>Download</a>
   </div>
-
-  {% if not viewer %}
-  <div class="login-hint">Sign in to save songs to your library.</div>
-  {% endif %}
 </div>
 
 <audio id="audio" {% if song.audio_url %}src="{{ song.audio_url }}"{% endif %}></audio>
@@ -143,9 +130,13 @@
 
   playBtn.addEventListener('click', () => {
     if (!audio.src) return;
-    if (audio.paused) { audio.play(); playBtn.textContent = '⏸'; }
-    else              { audio.pause(); playBtn.textContent = '▶'; }
+    if (audio.paused) { audio.play().catch(() => {}); }
+    else              { audio.pause(); }
   });
+
+  audio.addEventListener('play',  () => { playBtn.textContent = '⏸'; });
+  audio.addEventListener('pause', () => { playBtn.textContent = '▶'; });
+  audio.addEventListener('ended', () => { playBtn.textContent = '▶'; });
 
   audio.addEventListener('timeupdate', () => {
     if (!audio.duration) return;
@@ -153,32 +144,12 @@
     cur.textContent = fmt(audio.currentTime);
   });
 
-  audio.addEventListener('ended', () => { playBtn.textContent = '▶'; });
-
   document.getElementById('bar').addEventListener('click', e => {
     if (!audio.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
   });
 
-  const saveBtn = document.getElementById('save-btn');
-  if (saveBtn && saveBtn.dataset.songId) {
-    saveBtn.addEventListener('click', async () => {
-      saveBtn.disabled = true;
-      saveBtn.textContent = 'Saving…';
-      const resp = await fetch(`/api/songs/${saveBtn.dataset.songId}/save/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-      });
-      if (resp.ok) {
-        saveBtn.textContent = 'Saved';
-        saveBtn.classList.add('saved');
-      } else {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Add to library';
-      }
-    });
-  }
 </script>
 </body>
 </html>
