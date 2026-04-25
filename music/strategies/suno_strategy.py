@@ -2,7 +2,7 @@ import time
 import threading
 import requests
 from django.conf import settings
-from .base import SongGeneratorStrategy
+from .song_generator_strategy import SongGeneratorStrategy
 
 
 class SunoSongGeneratorStrategy(SongGeneratorStrategy):

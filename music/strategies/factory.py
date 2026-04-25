@@ -1,5 +1,5 @@
 from django.conf import settings
-from .base import SongGeneratorStrategy
+from .song_generator_strategy import SongGeneratorStrategy
 
 
 def get_generator_strategy() -> SongGeneratorStrategy:

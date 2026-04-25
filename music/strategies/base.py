@@ -1,8 +1,1 @@
-from abc import ABC, abstractmethod
-
-
-class SongGeneratorStrategy(ABC):
-
-    @abstractmethod
-    def generate(self, song) -> 'Song':
-        """Generate audio for a Song instance. Returns the updated Song."""
+from .song_generator_strategy import SongGeneratorStrategy  # noqa: F401 (kept for backwards compat)

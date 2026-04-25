@@ -1,4 +1,4 @@
-from .base import SongGeneratorStrategy
+from .song_generator_strategy import SongGeneratorStrategy
 
 
 class MockSongGeneratorStrategy(SongGeneratorStrategy):

@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout as auth_logout
 from .models import User, Song, Album, ShareLink, SavedSong
-from .services.generation_service import SongGenerationContext
+from .services.song_generation_context import SongGenerationContext
 
 
 def login_view(request):
