@@ -62,7 +62,11 @@ Edit `.env` and fill in the values (see **Strategy Configuration** and **Google 
    GOOGLE_CLIENT_ID=your-client-id-here
    GOOGLE_CLIENT_SECRET=your-client-secret-here
    ```
-7. After running the server, go to `http://127.0.0.1:8000/admin/` → **Sites** → change `example.com` to `127.0.0.1:8000`
+7. Create a superuser to access the admin console:
+   ```bash
+   python manage.py createsuperuser
+   ```
+8. After running the server, go to `http://127.0.0.1:8000/admin/` → **Sites** → change `example.com` to `127.0.0.1:8000`
 
 **5. Run migrations**
 ```bash
